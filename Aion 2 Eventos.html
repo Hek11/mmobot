@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aion 2 — Eventos Gamer</title>
+
+<!-- 1. CARGAMOS LA LIBRERÍA DE SUPABASE PRIMERO -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* Importamos fuentes estilo Gamer / Celestial Futurista */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Montserrat:wght@500;700;800&family=Orbitron:wght@800;900&family=Permanent+Marker&display=swap');
+
+:root {
+  --cyan: #00e5ff;
+  --purple: #a100ff;
+  --magenta: #ff007f;
+  --gold: #ffaa00;
+  --green: #00ffcc;
+  --dark: #050811;
+  --glow-multi: 0 0 15px rgba(161, 0, 255, 0.4), 0 0 25px rgba(0, 229, 255, 0.3);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--dark);
+  color: #fff;
+  font-family: Montserrat, Arial, sans-serif;
+}
+body { overflow-x: hidden; }
+
+/* FONDO DE PANTALLA COMPLETA AION 2 */
+.page-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  background: #050811 url('./Aion2.jpg') center center / cover no-repeat;
+}
+
+.page-bg:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(161, 0, 255, 0.25), rgba(0, 0, 0, 0.75) 50%, rgba(255, 0, 127, 0.2)),
+    linear-gradient(180deg, rgba(5, 8, 17, 0.4), rgba(5, 8, 17, 0.85));
+}
+
+.app {
+  position: relative;
+  z-index: 3;
+  min-height: 100vh;
+}
+
+/* MARCO NEÓN Y BORDES DE LA INTERFAZ */
+.topbar,
+.sidebar,
+.intro,
+.dialog,
+.ai-panel,
+.back,
+.ai-btn {
+  border: 2px solid transparent !important;
+  background-image: linear-gradient(rgba(10, 15, 30, 0.85), rgba(10, 15, 30, 0.85)),
+                    linear-gradient(135deg, var(--cyan), var(--purple), var(--magenta)) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+  border-radius: 16px !important;
+  box-shadow: 0 0 20px rgba(161, 0, 255, 0.35), inset 0 0 10px rgba(0, 229, 255, 0.2) !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.topbar {
+  margin: 12px 16px;
+  height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+}
+
+.brand {
+  font: 900 22px 'Orbitron', sans-serif;
+  background: linear-gradient(90deg, #fff, var(--cyan), var(--magenta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1.5px;
+  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6));
+}
+
+.brand small {
+  display: block;
+  margin-top: 3px;
+  color: #ffaa00;
+  -webkit-text-fill-color: #ffaa00;
+  font: 700 10px Montserrat;
+  letter-spacing: 3px;
+}
+
+.nav-buttons { display: flex; gap: 10px; }
+
+.back {
+  padding: 9px 16px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+.back:hover { box-shadow: 0 0 20px var(--magenta) !important; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0,1fr);
+  gap: 16px;
+  padding: 0 16px 24px;
+  min-height: calc(100vh - 90px);
+}
+
+.sidebar { position: relative; padding: 24px 18px; }
+
+.side-title {
+  margin: 0 0 16px;
+  font: 800 16px 'Orbitron', sans-serif;
+  text-align: center;
+  background: linear-gradient(90deg, var(--green), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.icon-buttons-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.neon-icon-btn {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  background: rgba(8, 14, 28, 0.9);
+  border: 2px solid var(--btn-color, #00e5ff);
+  box-shadow: 0 0 15px var(--btn-glow, rgba(0, 229, 255, 0.4)), inset 0 0 8px var(--btn-glow, rgba(0, 229, 255, 0.2));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.neon-icon-btn svg {
+  width: 28px;
+  height: 28px;
+  stroke: var(--btn-color, #00e5ff);
+  filter: drop-shadow(0 0 6px var(--btn-color, #00e5ff));
+  transition: transform 0.3s ease;
+}
+
+.neon-icon-btn:hover {
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 0 25px var(--btn-color, rgba(0, 229, 255, 0.8)), inset 0 0 15px var(--btn-glow);
+}
+
+.neon-icon-btn:hover svg { transform: scale(1.12); }
+
+.neon-icon-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -42px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  padding: 6px 10px;
+  background: rgba(5, 8, 17, 0.95);
+  border: 1px solid var(--btn-color, #00e5ff);
+  box-shadow: 0 0 12px var(--btn-glow);
+  border-radius: 8px;
+  color: #fff;
+  font: 700 9px Montserrat;
+  white-space: nowrap;
+  letter-spacing: 1px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s ease;
+  z-index: 10;
+}
+
+.neon-icon-btn:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.btn-add-event { --btn-color: #00ffcc; --btn-glow: rgba(0, 255, 204, 0.6); }
+.btn-calendar { --btn-color: #ff007f; --btn-glow: rgba(255, 0, 127, 0.6); }
+.btn-notepad { --btn-color: #ffaa00; --btn-glow: rgba(255, 170, 0, 0.6); }
+
+.main { min-width: 0; }
+
+.intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.intro h1 {
+  margin: 0;
+  font: 900 clamp(22px, 3.2vw, 34px) 'Orbitron', sans-serif;
+  background: linear-gradient(90deg, #ffffff, var(--cyan), var(--magenta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  filter: drop-shadow(0 0 12px rgba(161, 0, 255, 0.6));
+}
+
+.intro p {
+  margin: 8px 0 0;
+  color: #ffd27f;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clock-box {
+  position: relative;
+  padding: 14px 28px;
+  background: rgba(8, 12, 24, 0.9);
+  border: 2px solid var(--magenta) !important;
+  border-radius: 18px !important;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(255, 0, 127, 0.4), inset 0 0 12px rgba(255, 0, 127, 0.2) !important;
+  backdrop-filter: blur(12px);
+  min-width: 260px;
+}
+
+.clock-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ffaa00;
+  font: 800 12px 'Orbitron', Montserrat, sans-serif;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ff007f;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ff007f;
+  animation: pulse-live 1.2s infinite alternate;
+}
+
+@keyframes pulse-live {
+  0% { opacity: 0.3; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.3); }
+}
+
+.clock-box strong {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  font: 900 clamp(28px, 3.5vw, 38px) 'Orbitron', sans-serif;
+  letter-spacing: 4px;
+  text-shadow: 0 0 12px var(--magenta), 0 0 25px rgba(255, 0, 127, 0.6);
+}
+
+.section-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section {
+  margin: 0;
+  color: #fff;
+  font: 800 18px 'Orbitron', sans-serif;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px var(--cyan);
+}
+
+.filter-tabs { display: flex; gap: 8px; }
+
+.filter-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--purple);
+  border-radius: 20px;
+  background: rgba(12, 16, 32, 0.85);
+  color: #d4f7ff;
+  font: 700 11px 'Orbitron', sans-serif;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.filter-btn:hover, .filter-btn.active {
+  background: linear-gradient(90deg, var(--purple), var(--magenta));
+  color: #fff;
+  border-color: #fff;
+  box-shadow: 0 0 15px rgba(255, 0, 127, 0.6);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.card {
+  position: relative;
+  min-height: 340px;
+  border-radius: 16px;
+  background: rgba(8, 14, 26, 0.75);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0 25px var(--neon-glow);
+}
+
+.card-frame-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-theme-0 { --neon-color: #00e5ff; --neon-glow: rgba(0, 229, 255, 0.6); }
+.card-theme-1 { --neon-color: #ff007f; --neon-glow: rgba(255, 0, 127, 0.6); }
+.card-theme-2 { --neon-color: #ffaa00; --neon-glow: rgba(255, 170, 0, 0.6); }
+.card-theme-3 { --neon-color: #00ffcc; --neon-glow: rgba(0, 255, 204, 0.6); }
+.card-theme-4 { --neon-color: #a100ff; --neon-glow: rgba(161, 0, 255, 0.6); }
+.card-theme-5 { --neon-color: #ff3366; --neon-glow: rgba(255, 51, 102, 0.6); }
+
+.card-header-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid var(--neon-color);
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  color: var(--neon-color);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  box-shadow: 0 0 10px var(--neon-glow);
+}
+
+.day-tag {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.tag-today { background: rgba(0, 255, 204, 0.2); color: #00ffcc; border: 1px solid #00ffcc; box-shadow: 0 0 8px rgba(0, 255, 204, 0.4); }
+.tag-tomorrow { background: rgba(255, 170, 0, 0.2); color: #ffaa00; border: 1px solid #ffaa00; box-shadow: 0 0 8px rgba(255, 170, 0, 0.4); }
+.tag-future { background: rgba(161, 0, 255, 0.2); color: #e080ff; border: 1px solid #a100ff; box-shadow: 0 0 8px rgba(161, 0, 255, 0.4); }
+
+.card-body-content { position: relative; z-index: 2; text-align: center; margin: auto 0; }
+
+.name {
+  margin: 10px 0 4px;
+  font-family: 'Orbitron', 'Permanent Marker', sans-serif;
+  font-size: clamp(15px, 1.4vw, 20px);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #ffffff;
+  text-shadow: 0 0 8px var(--neon-color), 0 0 18px var(--neon-glow), 2px 2px 4px rgba(0, 0, 0, 0.9);
+  line-height: 1.2;
+}
+
+.date { color: #ffe6ff; font-size: 11px; text-transform: capitalize; font-weight: 600; }
+
+.card-footer-content { position: relative; z-index: 2; text-align: center; }
+
+.timer {
+  margin: 6px auto 2px;
+  padding: 8px 4px;
+  border: 1px solid var(--neon-color);
+  border-radius: 10px;
+  background: rgba(4, 6, 14, 0.9);
+  color: #ffffff;
+  font: 900 clamp(18px, 1.8vw, 24px) 'Orbitron', Montserrat;
+  letter-spacing: 2px;
+  box-shadow: inset 0 0 12px var(--neon-glow), 0 0 15px var(--neon-glow);
+  text-shadow: 0 0 10px var(--neon-color);
+}
+
+.timer-label { color: var(--neon-color); font-size: 9px; font-weight: 800; letter-spacing: 1.5px; }
+
+.empty {
+  grid-column: 1/-1;
+  padding: 34px;
+  border: 1px dashed var(--magenta);
+  border-radius: 16px;
+  background: rgba(8, 12, 24, 0.8);
+  text-align: center;
+  color: #ffb3d9;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  place-items: center;
+  padding: 20px;
+  background: rgba(3, 5, 10, 0.88);
+  backdrop-filter: blur(8px);
+}
+
+.modal.open { display: grid; }
+
+.dialog { width: min(680px,100%); max-height: 90vh; overflow: auto; padding: 26px; }
+.dialog h2 { margin: 0 0 8px; font: 800 23px 'Orbitron', sans-serif; color: #fff; text-shadow: 0 0 10px var(--magenta); }
+.dialog p { margin: 0 0 17px; color: #ffaa00; font-size: 13px; }
+
+.field { display: block; margin: 13px 0 0; color: #d4f7ff; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+.field input, .field textarea {
+  width: 100%; margin-top: 7px; padding: 12px;
+  border: 1px solid var(--purple); border-radius: 8px;
+  background: rgba(12, 18, 36, 0.9); color: #fff; outline: none; font: 14px Montserrat;
+}
+
+.field input:focus, .field textarea:focus { border-color: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+.field textarea { resize: vertical; min-height: 140px; }
+
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+
+.modal-actions, .calendar-nav { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.calendar-nav { justify-content: space-between; margin-top: 0; margin-bottom: 15px; align-items: center; }
+
+.day-title { font: 700 15px 'Orbitron', sans-serif; color: #ffaa00; text-align: center; }
+
+.btn {
+  padding: 10px 18px; border: none; border-radius: 8px;
+  background: linear-gradient(90deg, var(--purple), var(--magenta)); color: #fff; font-weight: 800; cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 12px rgba(255, 0, 127, 0.4);
+}
+
+.btn:hover { box-shadow: 0 0 20px rgba(255, 0, 127, 0.8); transform: translateY(-2px); }
+.btn.cancel { background: rgba(30, 40, 65, 0.8); border: 1px solid rgba(255,255,255,0.2); }
+
+.message { display: none; margin-top: 14px; padding: 10px; border-left: 3px solid var(--magenta); border-radius: 6px; background: rgba(20, 10, 30, 0.9); color: #ffb3d9; font-size: 12px; }
+.message.show { display: block; }
+
+.calendar-list { display: grid; gap: 9px; }
+.event-row { display: grid; grid-template-columns: 90px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--purple); border-radius: 10px; background: rgba(12, 18, 36, 0.8); }
+.event-time { color: var(--green); font-weight: 800; }
+.event-row strong { color: #ffffff; }
+.delete { padding: 8px 12px; border: 1px solid #ff0055; border-radius: 7px; background: rgba(150, 0, 50, 0.6); color: #fff; font-size: 11px; font-weight: 700; cursor: pointer; }
+
+.ai-btn { position: fixed; right: 22px; bottom: 22px; z-index: 15; padding: 12px 18px; color: #fff; font: 800 11px Montserrat; cursor: pointer; }
+.ai-btn:hover { box-shadow: 0 0 20px var(--magenta) !important; }
+
+.ai-panel { display: none; position: fixed; right: 22px; bottom: 75px; z-index: 16; width: min(380px,calc(100vw - 30px)); padding: 20px; }
+.ai-panel.open { display: block; }
+
+.ai-panel h2 { margin: 0 0 6px; font: 800 18px 'Orbitron', sans-serif; color: #fff; text-shadow: 0 0 8px var(--cyan); }
+.ai-panel p { margin: 0 0 11px; color: #ffaa00; font-size: 11px; }
+
+.ai-input { display: flex; gap: 7px; }
+.ai-input input { min-width: 0; flex: 1; padding: 10px; border: 1px solid var(--cyan); border-radius: 8px; background: rgba(8,14,28,.9); color: #fff; }
+.ai-input button { padding: 10px 12px; border: none; border-radius: 8px; background: var(--cyan); color: #000; font-weight: 800; cursor: pointer; }
+
+.ai-answer { display: none; margin-top: 11px; padding: 10px; border-left: 3px solid var(--cyan); border-radius: 6px; background: rgba(8,18,36,.9); color: #e0f8ff; font-size: 11px; white-space: pre-wrap; }
+.ai-answer.show { display: block; }
+
+@media(max-width:900px){ .layout { grid-template-columns: 1fr; } }
+@media(max-width:680px){ .cards { grid-template-columns: 1fr; } }
+@media(max-width:560px){
+  .topbar { margin: 8px; padding: 10px 14px; flex-direction: column; gap: 10px; height: auto; }
+  .intro { display: block; }
+  .clock-box { text-align: center; margin-top: 15px; width: 100%; }
+  .row { grid-template-columns: 1fr; }
+  .event-row { grid-template-columns: 60px 1fr; }
+  .delete { grid-column: 1/-1; width: 100%; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="page-bg"></div>
+
+<button id="aiBtn" class="ai-btn" type="button">✦ PREGUNTAR A GEMINI</button>
+
+<section id="aiPanel" class="ai-panel">
+  <h2>GEMINI — ASISTENTE</h2>
+  <p>Pregúntame cualquier cosa sobre Aion 2.</p>
+  <div class="ai-input">
+    <input id="aiQ" type="text" placeholder="Ej.: ¿Cuándo aparece el World Boss?">
+    <button id="aiAsk" type="button">PREGUNTAR</button>
+  </div>
+  <div id="aiA" class="ai-answer"></div>
+</section>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">AION 2<small>EVENTOS EN TIEMPO REAL</small></div>
+    <div class="nav-buttons">
+      <a class="back" href="Entrada.html">← VOLVER</a>
+      <a class="back" href="Throne and liberty Eventos.html">THRONE AND LIBERTY ➔</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h2 class="side-title">GESTIÓN DE EVENTOS</h2>
+      <div class="icon-buttons-container">
+        <button id="addOpen" class="neon-icon-btn btn-add-event" type="button" data-tooltip="AGREGAR UN EVENTO">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+
+        <button id="calendarOpen" class="neon-icon-btn btn-calendar" type="button" data-tooltip="VER CALENDARIO">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="3" ry="3"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+            <circle cx="8" cy="14" r="1" fill="currentColor"></circle>
+            <circle cx="12" cy="14" r="1" fill="currentColor"></circle>
+            <circle cx="16" cy="14" r="1" fill="currentColor"></circle>
+          </svg>
+        </button>
+
+        <button id="notepadOpen" class="neon-icon-btn btn-notepad" type="button" data-tooltip="BLOC DE NOTAS RÁPIDO">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="intro">
+        <div>
+          <h1>PRÓXIMOS EVENTOS</h1>
+          <p>Consulta los próximos jefes y eventos de Aion 2 programados.</p>
+        </div>
+        <div class="clock-box">
+          <div class="clock-header">
+            <span class="live-dot"></span> HORA LOCAL · CHILE
+          </div>
+          <strong id="clock">00:00:00</strong>
+        </div>
+      </section>
+
+      <div class="section-header-bar">
+        <h2 class="section">PRÓXIMOS 6 EVENTOS</h2>
+        <div class="filter-tabs">
+          <button class="filter-btn active" data-filter="all">TODOS</button>
+          <button class="filter-btn" data-filter="today">HOY</button>
+          <button class="filter-btn" data-filter="tomorrow">MAÑANA</button>
+        </div>
+      </div>
+
+      <section id="cards" class="cards"></section>
+    </main>
+  </div>
+</div>
+
+<div id="addModal" class="modal">
+  <section class="dialog">
+    <h2>AGREGAR PRÓXIMO EVENTO</h2>
+    <p>Escribe la fecha como 2409 o 24/09.</p>
+    <form id="eventForm">
+      <label class="field">NOMBRE DEL EVENTO
+        <input id="eventName" type="text" maxlength="70" required placeholder="Ejemplo: World Boss Aion">
+      </label>
+      <div class="row">
+        <label class="field">DÍA Y MES
+          <input id="eventDayMonth" type="text" inputmode="numeric" maxlength="4" required placeholder="2409 o 24/09">
+        </label>
+        <label class="field">HORA
+          <input id="eventTime" type="time" required>
+        </label>
+      </div>
+      <div id="formMessage" class="message"></div>
+      <div class="modal-actions">
+        <button class="btn cancel" type="button" data-close="addModal">CANCELAR</button>
+        <button class="btn" type="submit">CONFIRMAR EVENTO</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div id="notepadModal" class="modal">
+  <section class="dialog">
+    <h2>BLOC DE NOTAS — CARGA RÁPIDA</h2>
+    <p>Pega aquí las líneas con formato "HH:MM Nombre". Selecciona la fecha para importarlas todas de golpe.</p>
+    <form id="notepadForm">
+      <label class="field">DÍA Y MES PARA ESTA LISTA
+        <input id="notepadDayMonth" type="text" inputmode="numeric" maxlength="4" required placeholder="Ejemplo: 2409 o 24/09">
+      </label>
+      <label class="field">LISTA DE EVENTOS (PEGAR DESDE TU BLOC)
+        <textarea id="notepadContent" required placeholder="16:00 Boss Abyss
+18:00 RIFT PvP
+19:00 World Boss"></textarea>
+      </label>
+      <div id="notepadMessage" class="message"></div>
+      <div class="modal-actions">
+        <button class="btn cancel" type="button" data-close="notepadModal">CANCELAR</button>
+        <button class="btn" type="submit">IMPORTAR EVENTOS</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div id="calendarModal" class="modal">
+  <section class="dialog">
+    <h2>CALENDARIO DE EVENTOS</h2>
+    <p>Revisa los eventos por día.</p>
+    <div class="calendar-nav">
+      <button id="previousDay" class="btn cancel" type="button">← DÍA ANTERIOR</button>
+      <div id="calendarDayTitle" class="day-title"></div>
+      <button id="nextDay" class="btn" type="button">DÍA SIGUIENTE →</button>
+    </div>
+    <div id="calendarList" class="calendar-list"></div>
+    <div class="modal-actions">
+      <button class="btn cancel" type="button" data-close="calendarModal">CERRAR</button>
+    </div>
+  </section>
+</div>
+
+<!-- LÓGICA DE SUPABASE Y LA WEB CON INserción AUTOMÁTICA -->
+<script>
+const SUPABASE_URL = 'https://qzmyxhkdljntorpwkrel.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_iymmoU6ygywUbpouzV_OLw_W7EZexGc';
+
+const dbClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+let globalEvents = [];
+
+const defaultEvents = [
+  ['2026-09-24T16:00:00-03:00','WORLD BOSS ABYSS'],
+  ['2026-09-24T18:00:00-03:00','GRIETA PVP'],
+  ['2026-09-24T20:00:00-03:00','EVENTO CELESTIAL'],
+  ['2026-09-24T22:00:00-03:00','ASALTOS DE LEGIÓN'],
+  ['2026-09-25T01:00:00-03:00','JEFE DE ZONA'],
+  ['2026-09-25T04:00:00-03:00','GRIETA PVP'],
+  ['2026-09-25T14:00:00-03:00','EVENTO CELESTIAL'],
+  ['2026-09-25T18:00:00-03:00','WORLD BOSS ABYSS'],
+  ['2026-09-25T20:00:00-03:00','BATALLA DE FORTALEZA']
+].map((x,i)=>({id:'aion2-lista-'+i,name:x[1],when:x[0]}));
+
+async function loadEventsData(){
+    try{
+        const { data, error } = await dbClient
+            .from('Eventos')
+            .select('*')
+            .eq('Juego', 'aion_2')
+            .order('fecha_hora', { ascending: true });
+
+        if(error){
+            console.error('❌ ERROR CARGANDO AION 2 DESDE SUPABASE:', error);
+            globalEvents = defaultEvents;
+        }else{
+            globalEvents = (data || []).map(row => ({
+                id: String(row.id),
+                name: row.Nombre,
+                when: row.fecha_hora
+            }));
+
+            console.log('✅ AION 2 CARGADO DESDE SUPABASE:', globalEvents);
+
+            if(globalEvents.length === 0){
+                globalEvents = defaultEvents;
+            }
+        }
+    }catch(err){
+        console.error('❌ ERROR:', err);
+        globalEvents = defaultEvents;
+    }
+    renderCards();
+}
+
+let currentFilter = 'all';
+
+const cards=document.getElementById('cards'),clock=document.getElementById('clock'),addModal=document.getElementById('addModal'),calendarModal=document.getElementById('calendarModal'),notepadModal=document.getElementById('notepadModal'),form=document.getElementById('eventForm'),notepadForm=document.getElementById('notepadForm'),eventName=document.getElementById('eventName'),eventDayMonth=document.getElementById('eventDayMonth'),eventTime=document.getElementById('eventTime'),formMessage=document.getElementById('formMessage'),notepadMessage=document.getElementById('notepadMessage'),calendarList=document.getElementById('calendarList'),calendarDayTitle=document.getElementById('calendarDayTitle');let viewedDate=null;
+
+function getEvents(){ return globalEvents; }
+function saveEvents(v){ globalEvents = v; renderCards(); }
+function sortEvents(v){return[...v].sort((a,b)=>new Date(a.when)-new Date(b.when))}
+
+function chileDateParts(date=new Date()){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);return{year:+p.find(x=>x.type==='year').value,month:+p.find(x=>x.type==='month').value,day:+p.find(x=>x.type==='day').value}}
+function dayKey(d){const p=chileDateParts(d);return`${p.year}-${String(p.month).padStart(2,'0')}-${String(p.day).padStart(2,'0')}`}
+function getTomorrowKey(){
+  const now = new Date();
+  now.setDate(now.getDate() + 1);
+  return dayKey(now);
+}
+
+function parseDayMonth(text,time){
+  const raw=text.trim(),digits=raw.replace(/[^0-9]/g,'');let day,month;
+  if(/^\d{4}$/.test(digits)){day=+digits.slice(0,2);month=+digits.slice(2,4)}
+  else{const split=raw.match(/^(\d{1,2})\s*[\/-]\s*(\d{1,2})$/);if(!split)return null;day=+split[1];month=+split[2]}
+  if(month<1||month>12||day<1||day>31)return null;
+  const now=chileDateParts(),selectedDayKey=`${now.year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  const [hh,mm]=time.split(':').map(Number);if(hh==null||mm==null||hh<0||hh>23||mm<0||mm>59)return null;
+  const candidate=new Date(`${selectedDayKey}T${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:00-03:00`);
+  return Number.isNaN(candidate.getTime())?null:candidate;
+}
+
+function fmt(s){s=Math.max(0,Math.floor(s));return`${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
+function dateText(d){return d.toLocaleString('es-CL',{timeZone:'America/Santiago',weekday:'long',day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit',hour12:false})}
+function timeText(d){return new Intl.DateTimeFormat('es-CL',{timeZone:'America/Santiago',hour:'2-digit',minute:'2-digit',hour12:false}).format(d)}
+function esc(v){const e=document.createElement('div');e.textContent=v;return e.innerHTML}
+
+function getGamerFrameSVG(index) {
+  return `
+  <svg class="card-frame-svg" viewBox="0 0 320 380" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="glow-${index}" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="5" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <rect x="5" y="5" width="310" height="370" rx="16" ry="16" fill="none" stroke="var(--neon-color)" stroke-width="3" filter="url(#glow-${index})" />
+  </svg>
+  `;
+}
+
+function renderCards(){
+  const now = new Date();
+  const todayK = dayKey(now);
+  const tomorrowK = getTomorrowKey();
+
+  let filtered = sortEvents(getEvents()).filter(e => new Date(e.when) > now);
+  if (currentFilter === 'today') {
+    filtered = filtered.filter(e => dayKey(new Date(e.when)) === todayK);
+  } else if (currentFilter === 'tomorrow') {
+    filtered = filtered.filter(e => dayKey(new Date(e.when)) === tomorrowK);
+  }
+
+  const next6 = filtered.slice(0, 6);
+  cards.innerHTML = next6.length ? next6.map((e, i) => {
+    const d = new Date(e.when);
+    const eventK = dayKey(d);
+    const themeIndex = i % 6;
+    let dayTagHtml = '';
+    if (eventK === todayK) {
+      dayTagHtml = `<span class="day-tag tag-today">HOY</span>`;
+    } else if (eventK === tomorrowK) {
+      dayTagHtml = `<span class="day-tag tag-tomorrow">MAÑANA</span>`;
+    } else {
+      dayTagHtml = `<span class="day-tag tag-future">FUTURO</span>`;
+    }
+    return `
+    <article class="card card-theme-${themeIndex}">
+      ${getGamerFrameSVG(i)}
+      <div class="card-header-content">
+        <span class="label">EVENTO #${i + 1}</span>
+        ${dayTagHtml}
+      </div>
+      <div class="card-body-content">
+        <h2 class="name">${esc(e.name)}</h2>
+        <div class="date">${dateText(d)}</div>
+      </div>
+      <div class="card-footer-content">
+        <div class="timer" data-time="${d.toISOString()}">00:00:00</div>
+        <div class="timer-label">TIEMPO RESTANTE</div>
+      </div>
+    </article>`;
+  }).join('') : '<div class="empty">No hay eventos para la opción seleccionada.</div>';
+
+  updateTimers();
+}
+
+function updateTimers(){
+  const now=new Date();
+  document.querySelectorAll('.timer').forEach(e=>e.textContent=fmt((new Date(e.dataset.time)-now)/1000));
+  clock.textContent=new Intl.DateTimeFormat('es-CL',{timeZone:'America/Santiago',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(now);
+}
+
+function renderCalendar(){
+  if(!viewedDate)viewedDate=new Date();
+  const key=dayKey(viewedDate),list=sortEvents(getEvents()).filter(e=>dayKey(new Date(e.when))===key);
+  calendarDayTitle.textContent=new Intl.DateTimeFormat('es-CL',{timeZone:'America/Santiago',weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(viewedDate).toUpperCase();
+  calendarList.innerHTML=list.length?list.map(e=>`<div class="event-row"><div class="event-time">${timeText(new Date(e.when))}</div><strong>${esc(e.name)}</strong><button class="delete" type="button" data-id="${e.id}">🗑 ELIMINAR</button></div>`).join(''):'<div class="empty">No hay eventos para este día.</div>';
+  
+  // ELIMINAR DESDE SUPABASE Y LA WEB
+  calendarList.querySelectorAll('.delete').forEach(b=>b.onclick=async()=>{
+    if(confirm('¿Eliminar este evento?')){
+      const eventId = b.dataset.id;
+      // Si el evento viene de Supabase (es un número o ID de base de datos)
+      const { error } = await dbClient.from('Eventos').delete().eq('id', eventId);
+      if(error){
+        console.error('Error al eliminar en Supabase:', error);
+      }
+      loadEventsData(); // Recargamos desde Supabase
+      renderCalendar();
+    }
+  });
+}
+
+function open(m){m.classList.add('open')}
+function close(m){m.classList.remove('open')}
+function message(elem, t){elem.textContent=t;elem.classList.add('show')}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderCards();
+  };
+});
+
+document.getElementById('addOpen').onclick=()=>{form.reset();formMessage.classList.remove('show');open(addModal)};
+document.getElementById('notepadOpen').onclick=()=>{notepadForm.reset();notepadMessage.classList.remove('show');open(notepadModal)};
+document.getElementById('calendarOpen').onclick=()=>{viewedDate=new Date();renderCalendar();open(calendarModal)};
+document.getElementById('previousDay').onclick=()=>{viewedDate.setDate(viewedDate.getDate()-1);renderCalendar()};
+document.getElementById('nextDay').onclick=()=>{viewedDate.setDate(viewedDate.getDate()+1);renderCalendar()};
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>close(document.getElementById(b.dataset.close)));
+[addModal,calendarModal,notepadModal].forEach(m=>m.onclick=e=>{if(e.target===m)close(m)});
+
+// 🟢 SUBIR EVENTO NUEVO A SUPABASE AL CREARLO
+form.onsubmit=async e=>{
+  e.preventDefault();
+  const n=eventName.value.trim(),dm=eventDayMonth.value.trim(),t=eventTime.value;
+  if(!n||!dm||!t)return message(formMessage, 'Completa el nombre, día/mes y hora.');
+  const when=parseDayMonth(dm,t);
+  if(!when)return message(formMessage, 'Fecha inválida. Usa 2409 o 24/09.');
+  
+  const isoWhen = when.toISOString();
+  const nameStr = n.toUpperCase();
+
+  // Insertar en la tabla 'Eventos' de Supabase
+  const { error } = await dbClient
+    .from('Eventos')
+    .insert([
+      {
+        Juego: 'aion_2',
+        Nombre: nameStr,
+        fecha_hora: isoWhen,
+        notificado: false
+      }
+    ]);
+
+  if(error){
+    console.error('Error al guardar en Supabase:', error);
+    return message(formMessage, 'Error al guardar en la base de datos.');
+  }
+
+  loadEventsData(); // Recargar datos actualizados desde Supabase
+  close(addModal);
+};
+
+// 🟢 SUBIR LISTA DESDE EL BLOC DE NOTAS A SUPABASE
+notepadForm.onsubmit=async e=>{
+  e.preventDefault();
+  const dm=document.getElementById('notepadDayMonth').value.trim();
+  const content=document.getElementById('notepadContent').value.trim();
+  if(!dm || !content) return message(notepadMessage, 'Completa la fecha y pega el texto.');
+  
+  const lines = content.split('\n');
+  let newEventsToInsert = [];
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if(!trimmed) return;
+    const match = trimmed.match(/^(\d{1,2}:\d{2})\s+(.+)$/);
+    if(match){
+      const timeStr = match[1], nameStr = match[2].trim().toUpperCase();
+      const when = parseDayMonth(dm, timeStr);
+      if(when){
+        newEventsToInsert.push({
+          Juego: 'aion_2',
+          Nombre: nameStr,
+          fecha_hora: when.toISOString(),
+          notificado: false
+        });
+      }
+    }
+  });
+
+  if(newEventsToInsert.length === 0){
+    return message(notepadMessage, 'No se pudo leer ninguna línea. Formato: "16:00 Nombre".');
+  }
+
+  // Insertar bloque masivo en Supabase
+  const { error } = await dbClient.from('Eventos').insert(newEventsToInsert);
+
+  if(error){
+    console.error('Error al importar en Supabase:', error);
+    return message(notepadMessage, 'Error al guardar los eventos en la base de datos.');
+  }
+
+  loadEventsData(); // Recargar eventos frescos
+  close(notepadModal);
+};
+
+// Arrancamos cargando desde Supabase y activando relojes
+loadEventsData();
+updateTimers();
+setInterval(()=>{updateTimers()},1000);
+
+(function(){
+  const btn=document.getElementById('aiBtn'),panel=document.getElementById('aiPanel'),q=document.getElementById('aiQ'),ask=document.getElementById('aiAsk'),a=document.getElementById('aiA');
+  btn.onclick=()=>{panel.classList.toggle('open');if(panel.classList.contains('open'))q.focus()};
+  ask.onclick=()=>{a.textContent='El asistente no está conectado a una API en esta versión local.';a.classList.add('show')};
+  q.onkeydown=e=>{if(e.key==='Enter')ask.click()};
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acceso — Eventos MMORPG</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@500;600;700;800&family=Orbitron:wght@700;800;900&display=swap');
+
+:root {
+  --cyan: #00cfff;
+  --cyan-hot: #b9f8ff;
+  --purple: #df45ff;
+  --dark: #01040d;
+}
+
+*{ box-sizing: border-box; }
+html, body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--dark);
+  color: #fff;
+  font-family: 'Montserrat', Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* FONDO Y EFECTOS AMBIENTALES */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(110deg, rgba(0, 11, 31, 0.85), rgba(0, 40, 76, 0.5) 49%, rgba(36, 18, 48, 0.7)),
+              url('./fondo-unificado-hd.jpg') center/cover no-repeat;
+}
+
+.glow {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 30%, rgba(0, 207, 255, 0.22), transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(223, 69, 255, 0.15), transparent 45%);
+}
+
+.page {
+  position: relative;
+  z-index: 5;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* TARJETA DE LOGIN MMORPG / SCI-FI */
+.box {
+  position: relative;
+  width: min(460px, 92vw);
+  padding: 35px 30px;
+  background: rgba(2, 8, 22, 0.82);
+  backdrop-filter: blur(12px);
+  text-align: center;
+  isolation: isolate;
+  animation: fadeInBox 0.8s ease-out;
+}
+
+/* MARCO BISELADO FUTURISTA CON CLIP-PATH */
+.box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 2px solid var(--cyan);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 25px), calc(100% - 25px) 100%, 0 100%);
+  box-shadow: inset 0 0 20px rgba(0, 207, 255, 0.3),
+              0 0 15px rgba(0, 207, 255, 0.4),
+              0 0 35px rgba(223, 69, 255, 0.25);
+  transition: all 0.3s ease;
+}
+
+.box::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: -2;
+  border: 4px solid var(--purple);
+  clip-path: inherit;
+  filter: blur(10px);
+  opacity: 0.6;
+}
+
+/* ENCABEZADOS Y ORNAMENTOS GAMER */
+.header-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--cyan);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.header-ornament .line {
+  width: 45px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+}
+
+.header-ornament .gem {
+  color: #ffd77b;
+  text-shadow: 0 0 8px #ffd77b;
+}
+
+h1 {
+  margin: 4px 0;
+  font-family: 'Orbitron', 'Cinzel', sans-serif;
+  font-weight: 900;
+  font-size: clamp(22px, 4.5vw, 32px);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #ffffff 20%, #d1f4ff 50%, #00cfff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(0, 207, 255, 0.8)) drop-shadow(0 0 20px rgba(223, 69, 255, 0.5));
+}
+
+.subtitle {
+  margin: 6px 0 22px;
+  color: #aaeaff;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(0, 207, 255, 0.6);
+}
+
+.divider {
+  width: 80%;
+  height: 1px;
+  margin: 0 auto 20px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--purple), transparent);
+}
+
+/* FORMULARIO */
+form {
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin: 16px 0 6px;
+  color: var(--cyan-hot);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(0, 207, 255, 0.5);
+}
+
+input {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid rgba(0, 207, 255, 0.4);
+  border-radius: 4px;
+  background: rgba(0, 15, 40, 0.75);
+  color: #fff;
+  outline: none;
+  font: 14px 'Montserrat', sans-serif;
+  transition: all 0.25s ease;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+input:focus {
+  border-color: var(--cyan-hot);
+  background: rgba(0, 25, 60, 0.9);
+  box-shadow: 0 0 15px rgba(0, 207, 255, 0.6), inset 0 0 10px rgba(0, 207, 255, 0.2);
+}
+
+button {
+  width: 100%;
+  margin-top: 25px;
+  padding: 14px;
+  border: 1px solid var(--cyan-hot);
+  border-radius: 4px;
+  background: linear-gradient(135deg, #008fd6 0%, #003a6b 100%);
+  color: #fff;
+  font-family: 'Orbitron', 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 15px rgba(0, 143, 214, 0.5);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #00b0ff 0%, #00569e 100%);
+  box-shadow: 0 0 25px var(--cyan), 0 0 10px var(--cyan-hot);
+  border-color: #fff;
+}
+
+/* ERROR & FOOTER NOTE */
+.error {
+  display: none;
+  margin-top: 15px;
+  padding: 10px 12px;
+  border-left: 3px solid #ff4570;
+  border-radius: 3px;
+  background: rgba(120, 10, 40, 0.55);
+  color: #ffc4d0;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(255, 69, 112, 0.3);
+}
+
+.error.show {
+  display: block;
+}
+
+.note {
+  margin-top: 22px;
+  text-align: center;
+  color: #6faec7;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+@keyframes fadeInBox {
+  from { opacity: 0; transform: translateY(15px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="glow"></div>
+
+<main class="page">
+  <section class="box">
+    
+    <div class="header-ornament">
+      <span class="line"></span>
+      <span class="gem">◆</span>
+      <span class="line"></span>
+    </div>
+
+    <h1>EVENTOS MMORPG</h1>
+    <p class="subtitle">ACCESO AL PANEL PRINCIPAL</p>
+
+    <div class="divider"></div>
+
+    <form id="form">
+      <label for="id">ID de Usuario</label>
+      <input id="id" type="text" autocomplete="username" required placeholder="Ingresa tu ID">
+
+      <label for="pass">Contraseña</label>
+      <input id="pass" type="password" autocomplete="current-password" required placeholder="Ingresa tu contraseña">
+
+      <button type="submit">INGRESAR A EVENTOS ➔</button>
+
+      <div id="error" class="error">⚠ El ID o la contraseña son incorrectos.</div>
+    </form>
+
+    <p class="note">◆ Acceso privado al panel de eventos ◆</p>
+  </section>
+</main>
+
+<script>
+const form = document.getElementById('form');
+const error = document.getElementById('error');
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (document.getElementById('id').value.trim() === 'Eventos' && document.getElementById('pass').value === '1606') {
+    sessionStorage.setItem('eventosAccess', 'ok');
+    location.href = 'Entrada.html';
+  } else {
+    error.classList.add('show');
+    document.getElementById('pass').value = '';
+  }
+});
+</script>
+
+</body>
+</html>
