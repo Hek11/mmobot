@@ -27,7 +27,8 @@ const CANALES_THRONE = [
     '9876543210987654321'  // Segundo canal de Throne and Liberty
 ];
 
-client.once('clientReady', () => {
+// CORREGIDO: Se usa 'ready' para evitar fallos de inicialización en el cliente
+client.once('ready', () => {
     console.log(`🤖 Bot encendido y listo como ${client.user.tag}`);
 
     // Intervalo de revisión cada 60 segundos
