@@ -68,7 +68,7 @@ async function verificarEventos() {
             console.log(`⏱️ Evento: "${evento.Nombre}" (${evento.Juego}) | Diferencia: ${diferenciaMinutos.toFixed(2)} mins`);
 
             // Ventana de aviso ajustada para capturar eventos entre 0 y 35 minutos restantes
-            if (diferenciaMinutos <= 35 && diferenciaMinutos > 0) {
+            if (diferenciaMinutos <= 30 && diferenciaMinutos > 0) {
                 let listaCanales = [];
                 let nombreJuegoTexto = '';
 
