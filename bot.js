@@ -92,4 +92,4 @@ async function verificarEventos() {
     }
 }
 
-client.login(process.env.DISCORD_TOKEN);
+console.log("Token largo:", process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.length : "NO EXISTE");
