@@ -2,9 +2,13 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
-// Configuración de Supabase
+// Configuración de Supabase con validación en consola
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
+
+console.log("--> SUPABASE_URL leída:", supabaseUrl ? `SÍ (${supabaseUrl.substring(0, 15)}...)` : "NO EXISTE (undefined)");
+console.log("--> SUPABASE_KEY leída:", supabaseKey ? "SÍ (oculta por seguridad)" : "NO EXISTE (undefined)");
+
 const dbClient = createClient(supabaseUrl, supabaseKey);
 
 // Configuración de Discord
@@ -27,8 +31,8 @@ const CANALES_THRONE = [
     '9876543210987654321'  // Segundo canal de Throne and Liberty
 ];
 
-// CORREGIDO: Se usa 'ready' para evitar fallos de inicialización en el cliente
-client.once('ready', () => {
+// Actualizado a clientReady para evitar advertencias en Discord.js v14/v15
+client.once('clientReady', () => {
     console.log(`🤖 Bot encendido y listo como ${client.user.tag}`);
 
     // Intervalo de revisión cada 60 segundos
@@ -39,7 +43,7 @@ async function verificarEventos() {
     try {
         const ahora = new Date();
         
-        // Consulta corregida a la tabla 'Eventos' con 'E' mayúscula
+        // Consulta a la tabla 'Eventos' con 'E' mayúscula
         const { data: eventos, error } = await dbClient
             .from('Eventos')
             .select('*')
