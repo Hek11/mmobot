@@ -736,16 +736,28 @@ function getTomorrowKey(){
   return dayKey(now);
 }
 
-function parseDayMonth(text,time){
-  const raw=text.trim(),digits=raw.replace(/[^0-9]/g, '');let day,month;
-  if(/^\d{4}$/.test(digits)){day=+digits.slice(0,2);month=+digits.slice(2,4)}
-  else{const split=raw.match(/^(\d{1,2})\s*[\/-]\s*(\d{1,2})$/);if(!split)return null;day=+split[1];month=+split[2]}
-  if(month<1||month>12||day<1||day>31)return null;
-  const now=chileDateParts();
-  const [hh,mm]=time.split(':').map(Number);if(hh==null||mm==null||hh<0||hh>23||mm<0||mm>59)return null;
+// CORREGIDO ABSOLUTO: Devuelve el string exacto en formato local con offset -03:00 para Supabase
+function buildChileISO(text, time) {
+  const raw = text.trim(), digits = raw.replace(/[^0-9]/g, ''); 
+  let day, month;
+  if (/^\d{4}$/.test(digits)) { 
+    day = +digits.slice(0, 2); 
+    month = +digits.slice(2, 4); 
+  } else {
+    const split = raw.match(/^(\d{1,2})\s*[\/-]\s*(\d{1,2})$/);
+    if (!split) return null;
+    day = +split[1]; 
+    month = +split[2];
+  }
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
   
-  const candidate=new Date(now.year, month - 1, day, hh, mm, 0);
-  return Number.isNaN(candidate.getTime())?null:candidate;
+  const now = chileDateParts();
+  const selectedDayKey = `${now.year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const [hh, mm] = time.split(':').map(Number);
+  if (hh == null || mm == null || hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;
+  
+  // AQUÍ ESTÁ LA CLAVE: Evita cualquier conversión de zona horaria del navegador.
+  return `${selectedDayKey}T${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00-03:00`;
 }
 
 function fmt(s){s=Math.max(0,Math.floor(s));return`${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
@@ -845,8 +857,8 @@ function renderCalendar(){
   });
 }
 
-function openModal(m){m.classList.add('open')}
-function closeModal(m){m.classList.remove('open')}
+function open(m){m.classList.add('open')}
+function close(m){m.classList.remove('open')}
 function message(elem, t){elem.textContent=t;elem.classList.add('show')}
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -858,30 +870,23 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   };
 });
 
-document.getElementById('addOpen').onclick=()=>{form.reset();formMessage.classList.remove('show');openModal(addModal)};
-document.getElementById('notepadOpen').onclick=()=>{notepadForm.reset();notepadMessage.classList.remove('show');openModal(notepadModal)};
-document.getElementById('calendarOpen').onclick=()=>{viewedDate=new Date();renderCalendar();openModal(calendarModal)};
+document.getElementById('addOpen').onclick=()=>{form.reset();formMessage.classList.remove('show');open(addModal)};
+document.getElementById('notepadOpen').onclick=()=>{notepadForm.reset();notepadMessage.classList.remove('show');open(notepadModal)};
+document.getElementById('calendarOpen').onclick=()=>{viewedDate=new Date();renderCalendar();open(calendarModal)};
 document.getElementById('previousDay').onclick=()=>{viewedDate.setDate(viewedDate.getDate()-1);renderCalendar()};
 document.getElementById('nextDay').onclick=()=>{viewedDate.setDate(viewedDate.getDate()+1);renderCalendar()};
-document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeModal(document.getElementById(b.dataset.close)));
-[addModal,calendarModal,notepadModal].forEach(m=>m.onclick=e=>{if(e.target===m)closeModal(m)});
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>close(document.getElementById(b.dataset.close)));
+[addModal,calendarModal,notepadModal].forEach(m=>m.onclick=e=>{if(e.target===m)close(m)});
 
+// Formulario individual configurado con 'throne_and_liberty'
 form.onsubmit=async e=>{
   e.preventDefault();
   const n=eventName.value.trim(),dm=eventDayMonth.value.trim(),t=eventTime.value;
   if(!n||!dm||!t)return message(formMessage, 'Completa el nombre, día/mes y hora.');
-  const when=parseDayMonth(dm,t);
-  if(!when)return message(formMessage, 'Fecha inválida. Usa 2409 o 24/09.');
   
-  const year = when.getFullYear();
-  const monthStr = String(when.getMonth() + 1).padStart(2, '0');
-  const dayStr = String(when.getDate()).padStart(2, '0');
-  const hourStr = String(when.getHours()).padStart(2, '0');
-  const minStr = String(when.getMinutes()).padStart(2, '0');
+  const chileISO = buildChileISO(dm, t);
+  if(!chileISO)return message(formMessage, 'Fecha inválida. Usa 2409 o 24/09.');
   
-  // CORREGIDO: Incluye -03:00 para que el bot de Discord lea la zona horaria perfectamente
-  const localIsoWhen = `${year}-${monthStr}-${dayStr}T${hourStr}:${minStr}:00-03:00`;
-
   const nameStr = n.toUpperCase();
 
   const { error } = await dbClient
@@ -890,7 +895,7 @@ form.onsubmit=async e=>{
       {
         Juego: 'throne_and_liberty',
         Nombre: nameStr,
-        fecha_hora: localIsoWhen,
+        fecha_hora: chileISO,
         notificado: false
       }
     ]);
@@ -901,9 +906,10 @@ form.onsubmit=async e=>{
   }
 
   loadEventsData();
-  closeModal(addModal);
+  close(addModal);
 };
 
+// Formulario Carga Rápida configurado con 'throne_and_liberty'
 notepadForm.onsubmit=async e=>{
   e.preventDefault();
   const dm=document.getElementById('notepadDayMonth').value.trim();
@@ -920,22 +926,13 @@ notepadForm.onsubmit=async e=>{
     if(match){
       const timeStr = match[1];
       const nameStr = match[2].trim().toUpperCase();
-      const when = parseDayMonth(dm, timeStr);
+      const chileISO = buildChileISO(dm, timeStr);
 
-      if(when){
-        const year = when.getFullYear();
-        const monthStr = String(when.getMonth() + 1).padStart(2, '0');
-        const dayStr = String(when.getDate()).padStart(2, '0');
-        const hourStr = String(when.getHours()).padStart(2, '0');
-        const minStr = String(when.getMinutes()).padStart(2, '0');
-        
-        // CORREGIDO: Incluye -03:00 y se corrigió el error de sintaxis previo
-        const localIsoWhen = `${year}-${monthStr}-${dayStr}T${hourStr}:${minStr}:00-03:00`;
-
+      if(chileISO){
         newEventsToInsert.push({
           Juego: 'throne_and_liberty',
           Nombre: nameStr,
-          fecha_hora: localIsoWhen,
+          fecha_hora: chileISO,
           notificado: false
         });
       }
@@ -954,7 +951,7 @@ notepadForm.onsubmit=async e=>{
   }
 
   loadEventsData();
-  closeModal(notepadModal);
+  close(notepadModal);
 };
 
 loadEventsData();
