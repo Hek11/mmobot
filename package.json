@@ -1,0 +1,11 @@
+{
+  "name": "gamer-events-bot",
+  "version": "1.0.0",
+  "description": "Bot de Discord para alertas de Aion 2 y Throne and Liberty",
+  "main": "bot.js",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3",
+    "discord.js": "^14.14.1",
+    "ws": "^8.21.3"
+  }
+}
