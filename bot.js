@@ -27,7 +27,7 @@ const CANALES_THRONE = [
     '9876543210987654321'  // Segundo canal de Throne and Liberty
 ];
 
-client.once('ready', () => {
+client.once('clientReady', () => {
     console.log(`🤖 Bot encendido y listo como ${client.user.tag}`);
 
     // Intervalo de revisión cada 60 segundos
@@ -38,6 +38,7 @@ async function verificarEventos() {
     try {
         const ahora = new Date();
         
+        // Consulta corregida a la tabla 'Eventos' con 'E' mayúscula
         const { data: eventos, error } = await dbClient
             .from('Eventos')
             .select('*')
@@ -61,7 +62,8 @@ async function verificarEventos() {
 
             console.log(`⏱️ Evento: "${evento.Nombre}" (${evento.Juego}) | Diferencia: ${diferenciaMinutos.toFixed(2)} mins`);
 
-            if (diferenciaMinutos <= 30 && diferenciaMinutos > 1) {
+            // Ventana de aviso ajustada para capturar eventos entre 0 y 35 minutos restantes
+            if (diferenciaMinutos <= 35 && diferenciaMinutos > 0) {
                 let listaCanales = [];
                 let nombreJuegoTexto = '';
 
@@ -93,7 +95,7 @@ async function verificarEventos() {
 
                     await Promise.all(promesasEnvio);
 
-                    // Marcamos el evento como notificado en Supabase
+                    // Marcamos el evento como notificado en Supabase para que no se repita
                     await dbClient
                         .from('Eventos')
                         .update({ notificado: true })
@@ -106,7 +108,7 @@ async function verificarEventos() {
             }
         }
     } catch (err) {
-        console.error('Error en el ciclo de verificación de eventos:', err);
+        console.log('Error en el ciclo de verificación de eventos:', err);
     }
 }
 
