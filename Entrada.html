@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis Eventos</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@500;600;700;800&family=Orbitron:wght@700;800;900&display=swap');
+
+:root{
+  --purple:#df45ff;
+  --purple-hot:#ffb8ff;
+  --blue:#00cfff;
+  --blue-hot:#b9f8ff;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;background:#01030b;color:#fff;font-family:Montserrat,Arial,sans-serif}
+body{overflow-x:hidden}
+
+.page{
+  position:relative;
+  min-height:100vh;
+  overflow:hidden;
+  background:#02040d url('fondo-unificado-hd.jpg') center/cover no-repeat;
+  display: flex;
+  flex-direction: column;
+}
+
+.page:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:linear-gradient(90deg,rgba(20,0,41,.27),transparent 48%,rgba(0,25,68,.27)),linear-gradient(180deg,rgba(0,0,0,.12),transparent 45%,rgba(0,0,0,.42));
+}
+
+/* =========================================================
+   ESTRUCTURA DE PANELES
+   ========================================================= */
+.panels{
+  position: absolute;
+  top: 15px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0 3.7%;
+  gap: 2.5%;
+}
+
+.panel{
+  position: relative;
+  min-width: 0;
+  height: calc(100% - 70px); /* Deja espacio abajo para "ELIGE TU MUNDO" */
+  padding: 3% 2% 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between; /* Distribuye espacio proporcionalmente */
+}
+
+.panel:before{
+  content:"";
+  position:absolute;
+  inset:0% -2% 0%;
+  z-index:-1;
+  border:2px solid var(--accent);
+  clip-path:polygon(0 0,100% 0,100% 90%,95% 100%,5% 100%,0 90%);
+  box-shadow:inset 0 0 18px var(--accent),inset 0 0 49px color-mix(in srgb,var(--accent),transparent 48%),0 0 13px var(--hot),0 0 43px var(--accent),0 0 82px color-mix(in srgb,var(--accent),transparent 30%);
+  transition:.25s;
+}
+
+.panel:after{
+  content:"";
+  position:absolute;
+  inset:-1% -3% -1%;
+  z-index:-2;
+  border:12px solid var(--accent);
+  clip-path:inherit;
+  filter:blur(16px);
+  opacity:.52;
+  transition:.25s;
+}
+
+.tl{--accent:var(--purple);--hot:var(--purple-hot)}
+.aion{--accent:var(--blue);--hot:var(--blue-hot)}
+
+.panel:has(.enter-image:hover)::before{
+  border-color:#fff;
+  filter:brightness(1.5);
+  box-shadow:inset 0 0 25px #fff,inset 0 0 55px var(--hot),inset 0 0 100px var(--accent),0 0 12px #fff,0 0 36px var(--hot),0 0 78px var(--accent),0 0 130px var(--accent);
+}
+.panel:has(.enter-image:hover)::after{opacity:1;filter:blur(23px)}
+.panel:has(.enter-image:hover) .logo{filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 17px var(--hot)) drop-shadow(0 0 36px var(--accent))}
+
+/* CONTENEDOR DE LOGO Y ESLOGAN */
+.logo-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.logo{
+  position: relative;
+  z-index:7;
+  width:min(75%, 520px); /* Tamaño de logo balanceado */
+  height:auto;
+  transition:filter .25s;
+  display: block;
+}
+.aion .logo{
+  width:min(62%, 420px);
+}
+
+.tagline{
+  margin-top: 10px;
+  font:600 clamp(11px,1.1vw,15px) Cinzel,serif;
+  letter-spacing:5px;
+  color: #ffffff;
+  text-shadow:0 0 8px #fff, 0 0 16px var(--accent);
+}
+
+/* CARACTERÍSTICAS / FEATURES GAMER */
+.features{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  width: 100%;
+  gap: 2px;
+  margin: 10px 0;
+}
+
+.feature{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:0 2px;
+  border-right:1px solid rgba(255,255,255,.18);
+  font-size:clamp(8px,.7vw,11px);
+  font-weight:700;
+  line-height:1.2;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:#e8f4ff;
+  text-shadow:0 0 6px rgba(0,0,0,0.8), 0 0 10px var(--accent);
+  transition:transform .25s ease, filter .25s ease;
+}
+
+.feature:last-child{ border-right:0; }
+
+.feature:hover{
+  transform:translateY(-4px);
+  filter:brightness(1.4);
+}
+
+.badge-frame {
+  width: clamp(38px, 3.2vw, 48px);
+  height: clamp(38px, 3.2vw, 48px);
+  margin-bottom: 6px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-frame svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 6px var(--accent)) drop-shadow(0 0 12px var(--hot));
+  transition: transform 0.3s ease;
+}
+
+.feature:hover .badge-frame svg {
+  transform: scale(1.1) rotate(4deg);
+}
+
+.feature span.text-label {
+  display: block;
+  text-align: center;
+}
+
+/* BOTÓN ENTRAR */
+.enter-image{
+  position: relative;
+  width: 82%;
+  margin-bottom: 10px;
+  z-index:8;
+  display:block;
+  padding:0;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  isolation:isolate;
+  transition:transform .25s,filter .25s;
+}
+.enter-image:before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:11% 5%;
+  border-radius:50%;
+  background:#fff;
+  filter:blur(20px);
+  opacity:.28;
+  transition:.25s;
+}
+.enter-image img{
+  display:block;
+  width:100%;
+  height:auto;
+  pointer-events:none;
+  filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 10px var(--hot));
+}
+.enter-image:hover{
+  transform:translateY(-3px) scale(1.03);
+  filter:brightness(1.42) saturate(1.18);
+}
+.enter-image:hover:before{opacity:.92;filter:blur(34px);transform:scale(1.08,.85)}
+.enter-image:hover img{filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 18px var(--hot)) drop-shadow(0 0 40px var(--accent)) drop-shadow(0 0 65px var(--accent))}
+
+.world{
+  position:absolute;
+  bottom:39px;
+  left:50%;
+  z-index:12;
+  transform:translateX(-50%);
+  color:#f2dfb2;
+  font:500 clamp(10px,1.1vw,15px) Cinzel,serif;
+  letter-spacing:6px;
+  white-space:nowrap;
+  text-shadow:0 0 10px #fff;
+}
+.footer{
+  position:absolute;
+  bottom:16px;
+  left:50%;
+  z-index:12;
+  transform:translateX(-50%);
+  color:#f2d29b;
+  font:italic clamp(13px,1.35vw,19px) Cinzel,serif;
+  letter-spacing:2px;
+  white-space:nowrap;
+  text-shadow:0 0 10px #ffd477;
+}
+.footer:before,.footer:after{content:'◆';font-size:8px;margin:0 22px}
+
+/* RESPONSIVE DESIGN */
+@media(max-width:850px){
+  .panels{top:10px;padding:0 2%;gap:1%}
+  .panel{height: calc(100% - 60px);}
+  .logo{width:80%}
+  .aion .logo{width:68%}
+  .badge-frame{width: 34px; height: 34px; margin-bottom:4px;}
+  .enter-image{width: 90%;}
+  .footer{font-size:11px}
+}
+
+@media(max-width:600px){
+  body{overflow:auto}
+  .panels{position:relative;top:0;display:block;padding:0}
+  .panel{min-height:90vh;height:auto;margin-bottom:20px;padding:5% 3%}
+  .logo{width:75%!important}
+  .tagline{margin-top:8px;font-size:10px}
+  .features{margin: 20px 0;}
+  .enter-image{width: 85%;}
+}
+</style>
+</head>
+<body>
+<button id="logout" style="position:fixed;top:12px;right:12px;z-index:9999;padding:10px 14px;border:1px solid rgba(183,248,255,.9);border-radius:9px;background:rgba(0,43,81,.62);color:#fff;font:700 11px Montserrat;letter-spacing:.7px;cursor:pointer;box-shadow:0 0 12px rgba(0,207,255,.35);transition:.2s">⏻ CERRAR SESIÓN</button>
+
+<main class="page">
+
+<section class="panels">
+
+  <!-- SECCIÓN THRONE AND LIBERTY -->
+  <article class="panel tl">
+    
+    <!-- CONTENEDOR FLEX PARA LOGO Y ESLOGAN -->
+    <div class="logo-block">
+      <img class="logo" src="logo-throne-liberty.png" alt="Throne and Liberty">
+      <div class="tagline">UN MUNDO. MIL AVENTURAS.</div>
+    </div>
+    
+    <div class="features">
+      <!-- ÍCONO 1: JEFES MUNDIALES -->
+      <div class="feature">
+        <div class="badge-frame">
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="42" stroke="url(#p-grad)" stroke-width="3" />
+            <circle cx="50" cy="50" r="35" stroke="var(--purple-hot)" stroke-width="1" stroke-dasharray="4 3" />
+            <path d="M 50 2 L 50 12 M 50 88 L 50 98 M 2 50 L 12 50 M 88 50 L 98 50" stroke="var(--purple-hot)" stroke-width="2" />
+            <path d="M 36 34 L 50 25 L 64 34 L 64 56 C 64 68 50 76 50 76 C 50 76 36 68 36 56 Z" fill="rgba(223,69,255,0.25)" stroke="var(--purple-hot)" stroke-width="2.5"/>
+            <path d="M 45 42 L 50 37 L 55 42 L 50 60 Z" fill="var(--purple-hot)" />
+            <defs>
+              <linearGradient id="p-grad" x1="0" y1="0" x2="100" y2="100">
+                <stop offset="0%" stop-color="#ffb8ff" />
+                <stop offset="100%" stop-color="#df45ff" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="text-label">JEFES<br>MUNDIALES</span>
+      </div>
+
+      <!-- ÍCONO 2: JEFES DE CAMPO -->
+      <div class="feature">
+        <div class="badge-frame">
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="42" stroke="url(#p-grad)" stroke-width="3" />
+            <circle cx="50" cy="50" r="35" stroke="var(--purple-hot)" stroke-width="1" stroke-dasharray="6 4" />
+            <path d="M 50 20 L 58 35 L 75 35 L 61 46 L 66 63 L 50 52 L 34 63 L 39 46 L 25 35 L 42 35 Z" fill="rgba(223,69,255,0.2)" stroke="var(--purple-hot)" stroke-width="2.5"/>
+            <circle cx="50" cy="50" r="6" fill="var(--purple-hot)" />
+          </svg>
+        </div>
+        <span class="text-label">JEFES<br>DE CAMPO</span>
+      </div>
+
+      <!-- ÍCONO 3: EVENTOS DINÁMICOS -->
+      <div class="feature">
+        <div class="badge-frame">
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="42" stroke="url(#p-grad)" stroke-width="3" />
+            <circle cx="50" cy="50" r="35" stroke="var(--purple-hot)" stroke-width="1.5" />
+            <path d="M 50 20 Q 50 50 20 50 Q 50 50 50 80 Q 50 50 50 20 Z" fill="rgba(255,184,255,0.3)" stroke="var(--purple-hot)" stroke-width="2.5"/>
+            <circle cx="50" cy="50" r="4" fill="#ffffff" />
+          </svg>
+        </div>
+        <span class="text-label">EVENTOS<br>DINÁMICOS</span>
+      </div>
+
+      <!-- ÍCONO 4: DIARIOS / SEMANALES -->
+      <div class="feature">
+        <div class="badge-frame">
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="42" stroke="url(#p-grad)" stroke-width="3" />
+            <rect x="30" y="30" width="40" height="42" rx="6" fill="rgba(223,69,255,0.2)" stroke="var(--purple-hot)" stroke-width="2.5"/>
+            <line x1="30" y1="42" x2="70" y2="42" stroke="var(--purple-hot)" stroke-width="2"/>
+            <circle cx="40" cy="52" r="2.5" fill="var(--purple-hot)"/>
+            <circle cx="50" cy="52" r="2.5" fill="var(--purple-hot)"/>
+            <circle cx="60" cy="52" r="2.5" fill="var(--purple-hot)"/>
+            <circle cx="40" cy="62" r="2.5" fill="var(--purple-hot)"/>
+            <circle cx="50" cy="62" r="2.5" fill="var(--purple-hot)"/>
+            <circle cx="60" cy="62" r="2.5" fill="var(--purple-hot)"/>
+          </svg>
+        </div>
+        <span class="text-label">EVENTOS<br>DIARIOS / SEMANALES</span>
+      </div>
+    </div>
+
+    <a class="enter-image" href="Throne and Liberty Eventos.html">
+      <img src="boton-throne-entrar.png" alt="Entrar a Throne and Liberty">
+    </a>
+  </article>
+
+  <!-- SECCIÓN AION 2 -->
+  <article class="panel aion">
+    
+    <!-- CONTENEDOR FLEX PARA LOGO Y ESLOGAN -->
+    <div class="logo-block">
+      <img class="logo" src="logo-aion.png" alt="AION 2">
+      <div class="tagline">UN NUEVO LEGADO COMIENZA</div>
+    </div>
+
+    <div class="features">
+      <!-- ÍCONO 1: WORLD BOSS -->
+      <div class="feature">
+        <div class="badge-frame">
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="42" stroke="url(#b-grad)" stroke-width="3" />
+            <circle cx="50" cy="50" r="35" stroke="var(--blue-hot)" stroke-width="1" stroke-dasharray="4 3" />
+            <path d="M 50 2 L 50 12 M 50 88 L 50 98 M 2 50 L 12 50 M 88 50 L 98 50" stroke="var(--blue-hot)" stroke-width="2" />
+            <path d="M 32 35 L 50 25 L 68 35 L 64 54 L 50 72 L 36 54 Z" fill="rgba(0,207,255,0.25)" stroke="var(--blue-hot)" stroke-width="2.5"/>
+            <circle cx="42" cy="45" r="3" fill="var(--blue-hot)"/>
+            <circle cx="58" cy="45" r="3" fill="var(--blue-hot)"/>
+            <path d="M 45 58 L 50 63 L 55 58" stroke="var(--blue-hot)" stroke-width="2" />
+            <defs>
+              <linearGradient id="b-grad" x1="0" y1="0" x2="100" y2="100">
+                <stop offset="0%" stop-color="#b9f8ff" />
+                <stop offset="100%" stop-color="#00cfff" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="text-label">WORLD<br>BOSS</span>
+      </div>
+
+      <!-- ÍCONO 2: INSTANCIAS Y RAIDS -->
+      <div class="feature">
+        <div class="badge-frame">
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="42" stroke="url(#b-grad)" stroke-width="3" />
+            <circle cx="50" cy="50" r="35" stroke="var(--blue-hot)" stroke-width="1" stroke-dasharray="6 4" />
+            <circle cx="50" cy="38" r="7" fill="var(--blue-hot)"/>
+            <path d="M 38 64 C 38 52 62 52 62 64" stroke="var(--blue-hot)" stroke-width="3" fill="none"/>
+            <circle cx="33" cy="44" r="5" fill="rgba(185,248,255,0.7)"/>
+            <path d="M 24 66 C 24 56 42 56 42 66" stroke="rgba(185,248,255,0.7)" stroke-width="2" fill="none"/>
+            <circle cx="67" cy="44" r="5" fill="rgba(185,248,255,0.7)"/>
+            <path d="M 58 66 C 58 56 76 56 76 66" stroke="rgba(185,248,255,0.7)" stroke-width="2" fill="none"/>
+          </svg>
+        </div>
+        <span class="text-label">INSTANCIAS<br>Y RAIDS</span>
+      </div>
+
+      <!-- ÍCONO 3: EVENTOS DINÁMICOS -->
+      <div class="feature">
+        <div class="badge-frame">
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="42" stroke="url(#b-grad)" stroke-width="3" />
+            <circle cx="50" cy="50" r="35" stroke="var(--blue-hot)" stroke-width="1.5" />
+            <path d="M 50 20 Q 50 50 20 50 Q 50 50 50 80 Q 50 50 80 50 Q 50 50 50 20 Z" fill="rgba(185,248,255,0.3)" stroke="var(--blue-hot)" stroke-width="2.5"/>
+            <circle cx="50" cy="50" r="4" fill="#ffffff" />
+          </svg>
+        </div>
+        <span class="text-label">EVENTOS<br>DINÁMICOS</span>
+      </div>
+
+      <!-- ÍCONO 4: DIARIOS / SEMANALES -->
+      <div class="feature">
+        <div class="badge-frame">
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="42" stroke="url(#b-grad)" stroke-width="3" />
+            <rect x="30" y="30" width="40" height="42" rx="6" fill="rgba(0,207,255,0.2)" stroke="var(--blue-hot)" stroke-width="2.5"/>
+            <line x1="30" y1="42" x2="70" y2="42" stroke="var(--blue-hot)" stroke-width="2"/>
+            <circle cx="40" cy="52" r="2.5" fill="var(--blue-hot)"/>
+            <circle cx="50" cy="52" r="2.5" fill="var(--blue-hot)"/>
+            <circle cx="60" cy="52" r="2.5" fill="var(--blue-hot)"/>
+            <circle cx="40" cy="62" r="2.5" fill="var(--blue-hot)"/>
+            <circle cx="50" cy="62" r="2.5" fill="var(--blue-hot)"/>
+            <circle cx="60" cy="62" r="2.5" fill="var(--blue-hot)"/>
+          </svg>
+        </div>
+        <span class="text-label">EVENTOS<br>DIARIOS / SEMANALES</span>
+      </div>
+    </div>
+
+    <a class="enter-image" href="Aion 2 Eventos.html">
+      <img src="boton-aion-entrar.png" alt="Entrar a AION 2">
+    </a>
+  </article>
+
+</section>
+
+<div class="world">ELIGE TU MUNDO</div>
+<div class="footer">Tu tiempo, tus aventuras</div>
+</main>
+
+<script>
+document.getElementById('logout').addEventListener('click',()=>{
+  sessionStorage.removeItem('eventosAccess');
+  window.location.href='Index.html';
+});
+</script>
+</body>
+</html>
