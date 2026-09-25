@@ -92,4 +92,4 @@ async function verificarEventos() {
     }
 }
 
-client.login(TOKEN_DISCORD);
+client.login(process.env.DISCORD_TOKEN);
