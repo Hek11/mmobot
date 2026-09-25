@@ -1,1092 +1,402 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Aion 2 — Eventos Gamer</title>
-
-<!-- 1. CARGAMOS LA LIBRERÍA DE SUPABASE PRIMERO -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal de Juegos - Eventos</title>
 <style>
-/* Importamos fuentes estilo Gamer / Celestial Futurista */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Montserrat:wght@500;700;800&family=Orbitron:wght@800;900&family=Permanent+Marker&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Rajdhani:wght@600;700&display=swap');
 
-:root {
-  --cyan: #00e5ff;
-  --purple: #a100ff;
-  --magenta: #ff007f;
-  --gold: #ffaa00;
-  --green: #00ffcc;
-  --dark: #050811;
-  --glow-multi: 0 0 15px rgba(161, 0, 255, 0.4), 0 0 25px rgba(0, 229, 255, 0.3);
+:root{
+  --bg-dark: #070913;
+  --bg-card: #0c1021;
+  --sidebar-width: 90px;
+  --neon-cyan: #00f3ff;
+  --neon-purple: #b026ff;
+  --neon-pink: #ff007f;
+  --text-main: #e2e8f0;
 }
 
-* { box-sizing: border-box; }
-html, body {
-  margin: 0;
-  min-height: 100%;
-  background: var(--dark);
-  color: #fff;
-  font-family: Montserrat, Arial, sans-serif;
-}
-body { overflow-x: hidden; }
-
-/* FONDO DE PANTALLA COMPLETA AION 2 */
-.page-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  background: #050811 url('./Aion2.jpg') center center / cover no-repeat;
-}
-
-.page-bg:after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(135deg, rgba(161, 0, 255, 0.25), rgba(0, 0, 0, 0.75) 50%, rgba(255, 0, 127, 0.2)),
-    linear-gradient(180deg, rgba(5, 8, 17, 0.4), rgba(5, 8, 17, 0.85));
-}
-
-.app {
-  position: relative;
-  z-index: 3;
-  min-height: 100vh;
-}
-
-/* MARCO NEÓN Y BORDES DE LA INTERFAZ */
-.topbar,
-.sidebar,
-.intro,
-.dialog,
-.ai-panel,
-.back,
-.ai-btn,
-.content-view {
-  border: 2px solid transparent !important;
-  background-image: linear-gradient(rgba(10, 15, 30, 0.85), rgba(10, 15, 30, 0.85)),
-                    linear-gradient(135deg, var(--cyan), var(--purple), var(--magenta)) !important;
-  background-origin: border-box !important;
-  background-clip: padding-box, border-box !important;
-  border-radius: 16px !important;
-  box-shadow: 0 0 20px rgba(161, 0, 255, 0.35), inset 0 0 10px rgba(0, 229, 255, 0.2) !important;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-}
-
-.topbar {
-  margin: 12px 16px;
-  height: 66px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 24px;
-}
-
-.brand {
-  font: 900 22px 'Orbitron', sans-serif;
-  background: linear-gradient(90deg, #fff, var(--cyan), var(--magenta));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: 1.5px;
-  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6));
-}
-
-.brand small {
-  display: block;
-  margin-top: 3px;
-  color: #ffaa00;
-  -webkit-text-fill-color: #ffaa00;
-  font: 700 10px Montserrat;
-  letter-spacing: 3px;
-}
-
-.nav-buttons { display: flex; gap: 10px; }
-
-.back {
-  padding: 9px 16px;
-  color: #fff;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 1px;
-}
-.back:hover { box-shadow: 0 0 20px var(--magenta) !important; }
-
-.layout {
-  display: grid;
-  grid-template-columns: 320px minmax(0,1fr);
-  gap: 16px;
-  padding: 0 16px 24px;
-  min-height: calc(100vh - 90px);
-}
-
-.sidebar { position: relative; padding: 20px 14px; display: flex; flex-direction: column; gap: 10px; }
-
-.side-title {
-  margin: 0 0 8px;
-  font: 800 15px 'Orbitron', sans-serif;
-  text-align: center;
-  background: linear-gradient(90deg, var(--green), var(--cyan));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* MENÚ LATERAL DE ICONOS CON DESCRIPCIÓN */
-.side-menu-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.side-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(8, 14, 28, 0.8);
-  border: 1px solid var(--item-color, var(--cyan));
-  cursor: pointer;
-  transition: all 0.25s ease;
-  text-align: left;
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  padding:0;
   width: 100%;
-}
-
-.side-menu-item:hover, .side-menu-item.active {
-  background: rgba(161, 0, 255, 0.25);
-  box-shadow: 0 0 15px var(--item-color, var(--cyan));
-  transform: translateX(4px);
-}
-
-.side-icon-box {
-  min-width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: rgba(5, 8, 17, 0.9);
-  border: 1px solid var(--item-color, var(--cyan));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 8px var(--item-color, var(--cyan));
-}
-
-.side-icon-box svg {
-  width: 20px;
-  height: 20px;
-  stroke: var(--item-color, var(--cyan));
-}
-
-.side-text-box {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.side-item-title {
-  font: 800 11px 'Orbitron', sans-serif;
-  color: #fff;
-  letter-spacing: 1px;
-}
-
-.side-item-desc {
-  font: 600 9px Montserrat;
-  color: #a7c5eb;
-}
-
-/* COLORES DE LOS ICONOS DEL MENÚ LATERAL */
-.menu-events { --item-color: #00ffcc; }
-.menu-classes { --item-color: #a100ff; }
-.menu-bosses { --item-color: #ff007f; }
-.menu-rifts { --item-color: #ffaa00; }
-.menu-add { --item-color: #00e5ff; }
-.menu-notepad { --item-color: #ff3366; }
-.menu-calendar { --item-color: #e080ff; }
-
-.main { min-width: 0; }
-
-.intro {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 18px;
-  padding: 20px 24px;
-  margin-bottom: 20px;
-}
-
-.intro h1 {
-  margin: 0;
-  font: 900 clamp(22px, 3.2vw, 34px) 'Orbitron', sans-serif;
-  background: linear-gradient(90deg, #ffffff, var(--cyan), var(--magenta));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  filter: drop-shadow(0 0 12px rgba(161, 0, 255, 0.6));
-}
-
-.intro p {
-  margin: 8px 0 0;
-  color: #ffd27f;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.clock-box {
-  position: relative;
-  padding: 14px 28px;
-  background: rgba(8, 12, 24, 0.9);
-  border: 2px solid var(--magenta) !important;
-  border-radius: 18px !important;
-  text-align: center;
-  box-shadow: 0 0 20px rgba(255, 0, 127, 0.4), inset 0 0 12px rgba(255, 0, 127, 0.2) !important;
-  backdrop-filter: blur(12px);
-  min-width: 260px;
-}
-
-.clock-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: #ffaa00;
-  font: 800 12px 'Orbitron', Montserrat, sans-serif;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
-.live-dot {
-  width: 8px;
-  height: 8px;
-  background-color: #ff007f;
-  border-radius: 50%;
-  box-shadow: 0 0 10px #ff007f;
-  animation: pulse-live 1.2s infinite alternate;
-}
-
-@keyframes pulse-live {
-  0% { opacity: 0.3; transform: scale(0.8); }
-  100% { opacity: 1; transform: scale(1.3); }
-}
-
-.clock-box strong {
-  display: block;
-  margin-top: 4px;
-  color: #ffffff;
-  font: 900 clamp(28px, 3.5vw, 38px) 'Orbitron', sans-serif;
-  letter-spacing: 4px;
-  text-shadow: 0 0 12px var(--magenta), 0 0 25px rgba(255, 0, 127, 0.6);
-}
-
-.section-header-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.section {
-  margin: 0;
-  color: #fff;
-  font: 800 18px 'Orbitron', sans-serif;
-  letter-spacing: 2px;
-  text-shadow: 0 0 10px var(--cyan);
-}
-
-.filter-tabs { display: flex; gap: 8px; }
-
-.filter-btn {
-  padding: 8px 16px;
-  border: 1px solid var(--purple);
-  border-radius: 20px;
-  background: rgba(12, 16, 32, 0.85);
-  color: #d4f7ff;
-  font: 700 11px 'Orbitron', sans-serif;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.filter-btn:hover, .filter-btn.active {
-  background: linear-gradient(90deg, var(--purple), var(--magenta));
-  color: #fff;
-  border-color: #fff;
-  box-shadow: 0 0 15px rgba(255, 0, 127, 0.6);
-}
-
-/* CONTENEDORES DE VISTAS INTERNAS (CLASES, BOSSES, ETC.) */
-.content-view {
-  display: none;
-  padding: 24px;
-  margin-bottom: 24px;
-}
-.content-view.active-view { display: block; }
-
-.content-view h2 {
-  margin-top: 0;
-  font: 800 20px 'Orbitron', sans-serif;
-  background: linear-gradient(90deg, var(--cyan), var(--magenta));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.content-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.info-card {
-  background: rgba(6, 10, 20, 0.85);
-  border: 1px solid var(--purple);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 0 10px rgba(161, 0, 255, 0.2);
-}
-
-.info-card h3 {
-  margin: 0 0 8px;
-  font: 800 14px 'Orbitron', sans-serif;
-  color: var(--cyan);
-}
-
-.info-card p {
-  margin: 0;
-  font-size: 12px;
-  color: #d4f7ff;
-  line-height: 1.5;
-}
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-.card {
-  position: relative;
-  min-height: 340px;
-  border-radius: 16px;
-  background: rgba(8, 14, 26, 0.75);
-  backdrop-filter: blur(10px);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 16px 14px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.8);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100vh;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Rajdhani', sans-serif;
   overflow: hidden;
 }
 
-.card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 0 25px var(--neon-glow);
+/* CONTENEDOR GENERAL */
+.app-container {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-rows: 75px 1fr;
+  height: 100vh;
+  width: 100vw;
 }
 
-.card-frame-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.card-theme-0 { --neon-color: #00e5ff; --neon-glow: rgba(0, 229, 255, 0.6); }
-.card-theme-1 { --neon-color: #ff007f; --neon-glow: rgba(255, 0, 127, 0.6); }
-.card-theme-2 { --neon-color: #ffaa00; --neon-glow: rgba(255, 170, 0, 0.6); }
-.card-theme-3 { --neon-color: #00ffcc; --neon-glow: rgba(0, 255, 204, 0.6); }
-.card-theme-4 { --neon-color: #a100ff; --neon-glow: rgba(161, 0, 255, 0.6); }
-.card-theme-5 { --neon-color: #ff3366; --neon-glow: rgba(255, 51, 102, 0.6); }
-
-.card-header-content {
-  position: relative;
-  z-index: 2;
+/* =========================================================
+   HEADER SUPERIOR
+   ========================================================= */
+.top-header {
+  grid-column: 1 / 3;
+  grid-row: 1 / 2;
+  background: linear-gradient(90deg, rgba(12,16,33,0.95) 0%, rgba(6,9,20,0.98) 100%);
+  border-bottom: 2px solid rgba(0, 243, 255, 0.25);
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  padding: 0 35px;
+  z-index: 100;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+  position: relative;
+}
+
+.top-header::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), transparent);
+}
+
+.header-left-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(0,243,255,0.3));
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.live-clock {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--neon-cyan);
+  background: rgba(0, 243, 255, 0.05);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 10px rgba(0,243,255,0.15);
+}
+
+.user-logout-btn {
+  background: linear-gradient(135deg, rgba(176,38,255,0.2), rgba(0,243,255,0.2));
+  border: 1px solid rgba(0, 243, 255, 0.5);
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 9px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(0,243,255,0.2);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.user-logout-btn:hover {
+  background: linear-gradient(135deg, rgba(176,38,255,0.4), rgba(0,243,255,0.4));
+  border-color: #fff;
+  box-shadow: 0 0 20px var(--neon-cyan), 0 0 30px var(--neon-purple);
+  transform: translateY(-2px);
+}
+
+/* =========================================================
+   MENÚ LATERAL
+   ========================================================= */
+.sidebar {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+  background: #04060e;
+  border-right: 2px solid rgba(0, 243, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 25px 0;
+  z-index: 110;
+  box-shadow: 8px 0 30px rgba(0,0,0,0.9);
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
   align-items: center;
 }
 
-.label {
-  display: inline-block;
-  padding: 4px 10px;
-  border: 1px solid var(--neon-color);
-  border-radius: 20px;
-  background: rgba(0, 0, 0, 0.85);
-  color: var(--neon-color);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  box-shadow: 0 0 10px var(--neon-glow);
-}
-
-.day-tag {
-  font-size: 9px;
-  font-weight: 800;
-  padding: 4px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.tag-today { background: rgba(0, 255, 204, 0.2); color: #00ffcc; border: 1px solid #00ffcc; box-shadow: 0 0 8px rgba(0, 255, 204, 0.4); }
-.tag-tomorrow { background: rgba(255, 170, 0, 0.2); color: #ffaa00; border: 1px solid #ffaa00; box-shadow: 0 0 8px rgba(255, 170, 0, 0.4); }
-.tag-future { background: rgba(161, 0, 255, 0.2); color: #e080ff; border: 1px solid #a100ff; box-shadow: 0 0 8px rgba(161, 0, 255, 0.4); }
-
-.card-body-content { position: relative; z-index: 2; text-align: center; margin: auto 0; }
-
-.name {
-  margin: 10px 0 4px;
-  font-family: 'Orbitron', 'Permanent Marker', sans-serif;
-  font-size: clamp(15px, 1.4vw, 20px);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #ffffff;
-  text-shadow: 0 0 8px var(--neon-color), 0 0 18px var(--neon-glow), 2px 2px 4px rgba(0, 0, 0, 0.9);
-  line-height: 1.2;
-}
-
-.date { color: #ffe6ff; font-size: 11px; text-transform: capitalize; font-weight: 600; }
-
-.card-footer-content { position: relative; z-index: 2; text-align: center; }
-
-.timer {
-  margin: 6px auto 2px;
-  padding: 8px 4px;
-  border: 1px solid var(--neon-color);
-  border-radius: 10px;
-  background: rgba(4, 6, 14, 0.9);
-  color: #ffffff;
-  font: 900 clamp(18px, 1.8vw, 24px) 'Orbitron', Montserrat;
-  letter-spacing: 2px;
-  box-shadow: inset 0 0 12px var(--neon-glow), 0 0 15px var(--neon-glow);
-  text-shadow: 0 0 10px var(--neon-color);
-}
-
-.timer-label { color: var(--neon-color); font-size: 9px; font-weight: 800; letter-spacing: 1.5px; }
-
-.empty {
-  grid-column: 1/-1;
-  padding: 34px;
-  border: 1px dashed var(--magenta);
-  border-radius: 16px;
-  background: rgba(8, 12, 24, 0.8);
-  text-align: center;
-  color: #ffb3d9;
-}
-
-.modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  place-items: center;
-  padding: 20px;
-  background: rgba(3, 5, 10, 0.88);
-  backdrop-filter: blur(8px);
-}
-
-.modal.open { display: grid; }
-
-.dialog { width: min(680px,100%); max-height: 90vh; overflow: auto; padding: 26px; }
-.dialog h2 { margin: 0 0 8px; font: 800 23px 'Orbitron', sans-serif; color: #fff; text-shadow: 0 0 10px var(--magenta); }
-.dialog p { margin: 0 0 17px; color: #ffaa00; font-size: 13px; }
-
-.field { display: block; margin: 13px 0 0; color: #d4f7ff; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
-.field input, .field textarea {
-  width: 100%; margin-top: 7px; padding: 12px;
-  border: 1px solid var(--purple); border-radius: 8px;
-  background: rgba(12, 18, 36, 0.9); color: #fff; outline: none; font: 14px Montserrat;
-}
-
-.field input:focus, .field textarea:focus { border-color: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
-.field textarea { resize: vertical; min-height: 140px; }
-
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
-
-.modal-actions, .calendar-nav { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-.calendar-nav { justify-content: space-between; margin-top: 0; margin-bottom: 15px; align-items: center; }
-
-.day-title { font: 700 15px 'Orbitron', sans-serif; color: #ffaa00; text-align: center; }
-
-.btn {
-  padding: 10px 18px; border: none; border-radius: 8px;
-  background: linear-gradient(90deg, var(--purple), var(--magenta)); color: #fff; font-weight: 800; cursor: pointer;
+/* BOTÓN DE ICONO CON TOOLTIP */
+.menu-icon-btn {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(176, 38, 255, 0.15));
+  border: 1px solid var(--neon-cyan);
+  border-radius: 12px;
+  color: var(--neon-cyan);
+  cursor: pointer;
+  box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.3), 0 0 20px rgba(0, 243, 255, 0.3);
+  text-decoration: none;
   transition: all 0.3s ease;
-  box-shadow: 0 0 12px rgba(255, 0, 127, 0.4);
 }
 
-.btn:hover { box-shadow: 0 0 20px rgba(255, 0, 127, 0.8); transform: translateY(-2px); }
-.btn.cancel { background: rgba(30, 40, 65, 0.8); border: 1px solid rgba(255,255,255,0.2); }
-
-.message { display: none; margin-top: 14px; padding: 10px; border-left: 3px solid var(--magenta); border-radius: 6px; background: rgba(20, 10, 30, 0.9); color: #ffb3d9; font-size: 12px; }
-.message.show { display: block; }
-
-.calendar-list { display: grid; gap: 9px; }
-.event-row { display: grid; grid-template-columns: 90px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--purple); border-radius: 10px; background: rgba(12, 18, 36, 0.8); }
-.event-time { color: var(--green); font-weight: 800; }
-.event-row strong { color: #ffffff; }
-.delete { padding: 8px 12px; border: 1px solid #ff0055; border-radius: 7px; background: rgba(150, 0, 50, 0.6); color: #fff; font-size: 11px; font-weight: 700; cursor: pointer; }
-
-.ai-btn { position: fixed; right: 22px; bottom: 22px; z-index: 15; padding: 12px 18px; color: #fff; font: 800 11px Montserrat; cursor: pointer; }
-.ai-btn:hover { box-shadow: 0 0 20px var(--magenta) !important; }
-
-.ai-panel { display: none; position: fixed; right: 22px; bottom: 75px; z-index: 16; width: min(380px,calc(100vw - 30px)); padding: 20px; }
-.ai-panel.open { display: block; }
-
-.ai-panel h2 { margin: 0 0 6px; font: 800 18px 'Orbitron', sans-serif; color: #fff; text-shadow: 0 0 8px var(--cyan); }
-.ai-panel p { margin: 0 0 11px; color: #ffaa00; font-size: 11px; }
-
-.ai-input { display: flex; gap: 7px; }
-.ai-input input { min-width: 0; flex: 1; padding: 10px; border: 1px solid var(--cyan); border-radius: 8px; background: rgba(8,14,28,.9); color: #fff; }
-.ai-input button { padding: 10px 12px; border: none; border-radius: 8px; background: var(--cyan); color: #000; font-weight: 800; cursor: pointer; }
-
-.ai-answer { display: none; margin-top: 11px; padding: 10px; border-left: 3px solid var(--cyan); border-radius: 6px; background: rgba(8,18,36,.9); color: #e0f8ff; font-size: 11px; white-space: pre-wrap; }
-.ai-answer.show { display: block; }
-
-@media(max-width:900px){ .layout { grid-template-columns: 1fr; } }
-@media(max-width:680px){ .cards, .content-grid { grid-template-columns: 1fr; } }
-@media(max-width:560px){
-  .topbar { margin: 8px; padding: 10px 14px; flex-direction: column; gap: 10px; height: auto; }
-  .intro { display: block; }
-  .clock-box { text-align: center; margin-top: 15px; width: 100%; }
-  .row { grid-template-columns: 1fr; }
-  .event-row { grid-template-columns: 60px 1fr; }
-  .delete { grid-column: 1/-1; width: 100%; }
+.menu-icon-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  filter: drop-shadow(0 0 10px var(--neon-cyan));
 }
+
+/* ESTILOS ESPECÍFICOS PARA DISCORD EN LA SIDEBAR */
+.menu-icon-btn.discord-btn {
+  background: linear-gradient(135deg, rgba(88, 101, 242, 0.3), rgba(0, 243, 255, 0.15));
+  border-color: #5865F2;
+  color: #5865F2;
+  box-shadow: inset 0 0 15px rgba(88, 101, 242, 0.3), 0 0 20px rgba(88, 101, 242, 0.3);
+}
+
+.menu-icon-btn.discord-btn svg {
+  fill: #5865F2;
+  filter: drop-shadow(0 0 10px #5865F2);
+}
+
+.menu-icon-btn.discord-btn:hover {
+  background: linear-gradient(135deg, rgba(88, 101, 242, 0.5), rgba(0, 243, 255, 0.3));
+  border-color: #fff;
+  color: #fff;
+  box-shadow: 0 0 25px #5865F2;
+}
+
+.menu-icon-btn.discord-btn::after {
+  color: #5865F2;
+  border-color: rgba(88, 101, 242, 0.4);
+}
+
+/* TOOLTIP FLOTANTE NEÓN */
+.menu-icon-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 75px;
+  background: rgba(7, 9, 19, 0.95);
+  color: var(--neon-cyan);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 243, 255, 0.4);
+  white-space: nowrap;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.8), 0 0 10px rgba(0,243,255,0.2);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-10px);
+  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  pointer-events: none;
+  z-index: 150;
+}
+
+.menu-icon-btn:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+/* =========================================================
+   CONTENEDOR PRINCIPAL Y VISTAS
+   ========================================================= */
+.main-content {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+  position: relative;
+  overflow-y: auto;
+  padding: 35px;
+  background: radial-gradient(circle at 50% 20%, #0d1229 0%, #060914 100%);
+}
+
+.view-section {
+  display: block;
+  animation: fadeIn 0.4s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* GRID DE JUEGOS */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 30px;
+}
+
+/* TARJETA DE JUEGO HUD */
+.game-card {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.8);
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+.game-card.tl {
+  background-image: radial-gradient(circle at center, rgba(30,10,50,0.5) 0%, rgba(5,2,15,0.9) 100%), url('fondo-throne.jpg');
+}
+.game-card.aion {
+  background-image: radial-gradient(circle at center, rgba(0,35,55,0.5) 0%, rgba(2,10,20,0.9) 100%), url('fondo-aion.jpg');
+}
+
+.tl { --accent-color: var(--neon-purple); --glow-color: rgba(176,38,255,0.4); }
+.aion { --accent-color: var(--neon-cyan); --glow-color: rgba(0,243,255,0.4); }
+
+.game-card::before {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, var(--glow-color), transparent);
+  transition: top 0.6s ease-in-out;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.game-card::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 2;
+  transition: border-color 0.3s ease;
+}
+
+.game-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--accent-color);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.9), 0 0 25px var(--glow-color);
+}
+
+.game-card:hover::before { top: 100%; }
+.game-card:hover::after { border-color: rgba(255, 255, 255, 0.3); }
+
+.game-logo{
+  position: relative;
+  z-index: 4;
+  max-height: 110px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 15px rgba(0,0,0,0.9));
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.game-card:hover .game-logo { transform: scale(1.08); }
+.game-card.tl .game-logo{ max-width: 82%; }
+.game-card.aion .game-logo{ max-width: 75%; }
 </style>
 </head>
-
 <body>
 
-<div class="page-bg"></div>
+<div class="app-container">
 
-<button id="aiBtn" class="ai-btn" type="button">✦ PREGUNTAR A GEMINI</button>
-
-<section id="aiPanel" class="ai-panel">
-  <h2>GEMINI — ASISTENTE</h2>
-  <p>Pregúntame cualquier cosa sobre Aion 2.</p>
-  <div class="ai-input">
-    <input id="aiQ" type="text" placeholder="Ej.: ¿Cuándo aparece el World Boss?">
-    <button id="aiAsk" type="button">PREGUNTAR</button>
-  </div>
-  <div id="aiA" class="ai-answer"></div>
-</section>
-
-<div class="app">
-  <header class="topbar">
-    <div class="brand">AION 2<small>EVENTOS EN TIEMPO REAL</small></div>
-    <div class="nav-buttons">
-      <a class="back" href="Entrada.html">← VOLVER</a>
-      <a class="back" href="Throne and liberty Eventos.html">THRONE AND LIBERTY ➔</a>
+  <!-- HEADER SUPERIOR -->
+  <header class="top-header">
+    <div class="header-left-title">Tu Mundo Tus Aventuras</div>
+    <div class="header-right">
+      <div id="liveClock" class="live-clock">00:00:00</div>
+      <button id="logout" class="user-logout-btn">⏻ CERRAR SESIÓN</button>
     </div>
   </header>
 
-  <div class="layout">
-    <!-- NUEVO MENÚ LATERAL CON ICONOS Y DESCRIPCIONES -->
-    <aside class="sidebar">
-      <h2 class="side-title">MENÚ PRINCIPAL</h2>
-      <div class="side-menu-list">
-        
-        <button class="side-menu-item menu-events active" data-view="eventsView" type="button">
-          <div class="side-icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          </div>
-          <div class="side-text-box">
-            <span class="side-item-title">Eventos</span>
-            <span class="side-item-desc">Próximos jefes y alertas</span>
-          </div>
+  <!-- MENÚ LATERAL -->
+  <aside class="sidebar">
+    <ul class="sidebar-menu">
+      <li>
+        <button class="menu-icon-btn" data-tooltip="JUEGOS">
+          <!-- Icono Control de Videojuego -->
+          <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
         </button>
+      </li>
+      <li>
+        <!-- Icono Discord en la parte inferior de la barra lateral -->
+        <a href="https://discord.gg/4rBsFKGZDj" target="_blank" class="menu-icon-btn discord-btn" data-tooltip="DISCORD">
+          <svg viewBox="0 0 127.14 96.36"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.15c2.62-27.29-4.52-51.2-19.49-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5.18-12.72,11.45-12.72S53.9,46,53.88,53,48.71,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.18-12.72,11.44-12.72S96.15,46,96.13,53,91,65.69,84.69,65.69Z"/></svg>
+        </a>
+      </li>
+    </ul>
+  </aside>
 
-        <button class="side-menu-item menu-classes" data-view="classesView" type="button">
-          <div class="side-icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-          </div>
-          <div class="side-text-box">
-            <span class="side-item-title">Clases</span>
-            <span class="side-item-desc">Roles, armas y estilos</span>
-          </div>
-        </button>
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="main-content">
+    <section class="view-section">
+      <div class="games-grid">
+        <!-- TARJETA 1: THRONE AND LIBERTY -->
+        <a href="Throne and Liberty Eventos.html" class="game-card tl">
+          <img class="game-logo" src="logo-throne-liberty.png" alt="Throne and Liberty">
+        </a>
 
-        <button class="side-menu-item menu-bosses" data-view="bossesView" type="button">
-          <div class="side-icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-          </div>
-          <div class="side-text-box">
-            <span class="side-item-title">World Bosses</span>
-            <span class="side-item-desc">Jefes mundiales y botín</span>
-          </div>
-        </button>
-
-        <button class="side-menu-item menu-rifts" data-view="riftsView" type="button">
-          <div class="side-icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-          </div>
-          <div class="side-text-box">
-            <span class="side-item-title">Grietas / Rifts</span>
-            <span class="side-item-desc">Incursiones y PvP</span>
-          </div>
-        </button>
-
-        <button id="addOpen" class="side-menu-item menu-add" type="button">
-          <div class="side-icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          </div>
-          <div class="side-text-box">
-            <span class="side-item-title">Agregar Evento</span>
-            <span class="side-item-desc">Registrar nuevo aviso</span>
-          </div>
-        </button>
-
-        <button id="notepadOpen" class="side-menu-item menu-notepad" type="button">
-          <div class="side-icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-          </div>
-          <div class="side-text-box">
-            <span class="side-item-title">Bloc de Notas</span>
-            <span class="side-item-desc">Importación rápida</span>
-          </div>
-        </button>
-
-        <button id="calendarOpen" class="side-menu-item menu-calendar" type="button">
-          <div class="side-icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3" ry="3"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-          </div>
-          <div class="side-text-box">
-            <span class="side-item-title">Calendario</span>
-            <span class="side-item-desc">Agenda completa</span>
-          </div>
-        </button>
-
+        <!-- TARJETA 2: AION 2 -->
+        <a href="Aion 2 Eventos.html" class="game-card aion">
+          <img class="game-logo" src="logo-aion.png" alt="AION 2">
+        </a>
       </div>
-    </aside>
+    </section>
+  </main>
 
-    <main class="main">
-      
-      <!-- VISTA 1: EVENTOS (Por defecto) -->
-      <div id="eventsView" class="content-view active-view">
-        <section class="intro">
-          <div>
-            <h1>PRÓXIMOS EVENTOS</h1>
-            <p>Consulta los próximos jefes y eventos de Aion 2 programados.</p>
-          </div>
-          <div class="clock-box">
-            <div class="clock-header">
-              <span class="live-dot"></span> HORA LOCAL · CHILE
-            </div>
-            <strong id="clock">00:00:00</strong>
-          </div>
-        </section>
-
-        <div class="section-header-bar">
-          <h2 class="section">PRÓXIMOS 6 EVENTOS</h2>
-          <div class="filter-tabs">
-            <button class="filter-btn active" data-filter="all">TODOS</button>
-            <button class="filter-btn" data-filter="today">HOY</button>
-            <button class="filter-btn" data-filter="tomorrow">MAÑANA</button>
-          </div>
-        </div>
-
-        <section id="cards" class="cards"></section>
-      </div>
-
-      <!-- VISTA 2: CLASES DE AION 2 (Abre aquí mismo) -->
-      <div id="classesView" class="content-view">
-        <h2>CLASES OFICIALES — AION 2</h2>
-        <p style="color: #ffaa00; font-size: 12px; margin-bottom: 12px;">Explora las especialidades y roles principales disponibles en el universo de Aion 2.</p>
-        <div class="content-grid">
-          <div class="info-card">
-            <h3>GLADIATOR (Guerrero)</h3>
-            <p>Especialista en combate cuerpo a cuerpo frontal con lanzas y grandes espadas. Destaca por su alto daño de área y gran resistencia en batallas de legión.</p>
-          </div>
-          <div class="info-card">
-            <h3>TEMPLAR (Defensor)</h3>
-            <p>El protector definitivo. Utiliza espada y escudo, poseyendo las habilidades de bloqueo y escudos de energía más potentes para liderar la vanguardia.</p>
-          </div>
-          <div class="info-card">
-            <h3>ASSASSIN (Incursor)</h3>
-            <p>Maestro del sigilo y el daño crítico rápido con dagas. Capaz de eliminar objetivos prioritarios en segundos antes de desvanecerse en las sombras.</p>
-          </div>
-          <div class="info-card">
-            <h3>RANGER (Arquero)</h3>
-            <p>Atacante a distancia con arcos de alta precisión y trampas de control. Excelente para hostigar enemigos y controlar zonas clave en PvP abierto.</p>
-          </div>
-          <div class="info-card">
-            <h3>SORCERER (Mago Elemental)</h3>
-            <p>Manipulador de los elementos (Fuego, Hielo, Viento). Causa devastadores daños mágicos explosivos en área a costa de una baja armadura física.</p>
-          </div>
-          <div class="info-card">
-            <h3>CLERIC (Sacerdote de Apoyo)</h3>
-            <p>La columna vertebral de cualquier grupo. Combina poderosas curaciones divinas con fuertes bendiciones defensivas y ofensivas.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- VISTA 3: WORLD BOSSES (Abre aquí mismo) -->
-      <div id="bossesView" class="content-view">
-        <h2>WORLD BOSSES — AION 2</h2>
-        <p style="color: #ffaa00; font-size: 12px; margin-bottom: 12px;">Entes colosales que aparecen en zonas abiertas de Atreia aportando equipamiento legendario.</p>
-        <div class="content-grid">
-          <div class="info-card">
-            <h3>KRAKAS EL DESTRUCTOR</h3>
-            <p>Aparece en las profundidades del Abismo. Su rotación incluye ondas expansivas de fuego letales que exigen esquive perfecto de los tanques.</p>
-          </div>
-          <div class="info-card">
-            <h3>REINA DE LA ESCARCHA</h3>
-            <p>Jefe de zona glacial. Congela el terreno e invoca add elementales que deben ser eliminados de inmediato por los DPS de área.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- VISTA 4: GRIETAS / RIFTS (Abre aquí mismo) -->
-      <div id="riftsView" class="content-view">
-        <h2>GRIETAS Y CAMPOS DE BATALLA</h2>
-        <p style="color: #ffaa00; font-size: 12px; margin-bottom: 12px;">Portales interdimensionales que conectan territorios y permiten enfrentamientos PvP de facciones.</p>
-        <div class="content-grid">
-          <div class="info-card">
-            <h3>GRIETA TEMPORAL ASMO-ELYOS</h3>
-            <p>Se abre de forma intermitente permitiendo cruzar al territorio rival para misiones especiales y escaramuzas de legión a gran escala.</p>
-          </div>
-          <div class="info-card">
-            <h3>ASALTO DE FORTALEZA</h3>
-            <p>Guerra abierta por el control de los artefactos centrales del Abismo. Otorga bonificaciones globales de experiencia y botín a la facción ganadora.</p>
-          </div>
-        </div>
-      </div>
-
-    </main>
-  </div>
 </div>
 
-<div id="addModal" class="modal">
-  <section class="dialog">
-    <h2>AGREGAR PRÓXIMO EVENTO</h2>
-    <p>Escribe la fecha como 2409 o 24/09.</p>
-    <form id="eventForm">
-      <label class="field">NOMBRE DEL EVENTO
-        <input id="eventName" type="text" maxlength="70" required placeholder="Ejemplo: World Boss Aion">
-      </label>
-      <div class="row">
-        <label class="field">DÍA Y MES
-          <input id="eventDayMonth" type="text" inputmode="numeric" maxlength="4" required placeholder="2409 o 24/09">
-        </label>
-        <label class="field">HORA
-          <input id="eventTime" type="time" required>
-        </label>
-      </div>
-      <div id="formMessage" class="message"></div>
-      <div class="modal-actions">
-        <button class="btn cancel" type="button" data-close="addModal">CANCELAR</button>
-        <button class="btn" type="submit">CONFIRMAR EVENTO</button>
-      </div>
-    </form>
-  </section>
-</div>
-
-<div id="notepadModal" class="modal">
-  <section class="dialog">
-    <h2>BLOC DE NOTAS — CARGA RÁPIDA</h2>
-    <p>Pega aquí las líneas con formato "HH:MM Nombre". Selecciona la fecha para importarlas todas de golpe.</p>
-    <form id="notepadForm">
-      <label class="field">DÍA Y MES PARA ESTA LISTA
-        <input id="notepadDayMonth" type="text" inputmode="numeric" maxlength="4" required placeholder="Ejemplo: 2409 o 24/09">
-      </label>
-      <label class="field">LISTA DE EVENTOS (PEGAR DESDE TU BLOC)
-        <textarea id="notepadContent" required placeholder="16:00 Boss Abyss
-18:00 RIFT PvP
-19:00 World Boss"></textarea>
-      </label>
-      <div id="notepadMessage" class="message"></div>
-      <div class="modal-actions">
-        <button class="btn cancel" type="button" data-close="notepadModal">CANCELAR</button>
-        <button class="btn" type="submit">IMPORTAR EVENTOS</button>
-      </div>
-    </form>
-  </section>
-</div>
-
-<div id="calendarModal" class="modal">
-  <section class="dialog">
-    <h2>CALENDARIO DE EVENTOS</h2>
-    <p>Revisa los eventos por día.</p>
-    <div class="calendar-nav">
-      <button id="previousDay" class="btn cancel" type="button">← DÍA ANTERIOR</button>
-      <div id="calendarDayTitle" class="day-title"></div>
-      <button id="nextDay" class="btn" type="button">DÍA SIGUIENTE →</button>
-    </div>
-    <div id="calendarList" class="calendar-list"></div>
-    <div class="modal-actions">
-      <button class="btn cancel" type="button" data-close="calendarModal">CERRAR</button>
-    </div>
-  </section>
-</div>
-
-<!-- LÓGICA DE SUPABASE Y NAVEGACIÓN INTERNA -->
 <script>
-const SUPABASE_URL = 'https://qzmyxhkdljntorpwkrel.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_iymmoU6ygywUbpouzV_OLw_W7EZexGc';
-
-const dbClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
-
-let globalEvents = [];
-
-const defaultEvents = [
-  ['2026-09-24T16:00:00-03:00','WORLD BOSS ABYSS'],
-  ['2026-09-24T18:00:00-03:00','GRIETA PVP'],
-  ['2026-09-24T20:00:00-03:00','EVENTO CELESTIAL'],
-  ['2026-09-24T22:00:00-03:00','ASALTOS DE LEGIÓN'],
-  ['2026-09-25T01:00:00-03:00','JEFE DE ZONA'],
-  ['2026-09-25T04:00:00-03:00','GRIETA PVP'],
-  ['2026-09-25T14:00:00-03:00','EVENTO CELESTIAL'],
-  ['2026-09-25T18:00:00-03:00','WORLD BOSS ABYSS'],
-  ['2026-09-25T20:00:00-03:00','BATALLA DE FORTALEZA']
-].map((x,i)=>({id:'aion2-lista-'+i,name:x[1],when:x[0]}));
-
-async function loadEventsData(){
-    try{
-        const { data, error } = await dbClient
-            .from('Eventos')
-            .select('*')
-            .eq('Juego', 'aion_2')
-            .order('fecha_hora', { ascending: true });
-
-        if(error){
-            console.error('❌ ERROR CARGANDO AION 2 DESDE SUPABASE:', error);
-            globalEvents = defaultEvents;
-        }else{
-            globalEvents = (data || []).map(row => ({
-                id: String(row.id),
-                name: row.Nombre,
-                when: row.fecha_hora
-            }));
-
-            if(globalEvents.length === 0){
-                globalEvents = defaultEvents;
-            }
-        }
-    }catch(err){
-        globalEvents = defaultEvents;
-    }
-    renderCards();
-}
-
-let currentFilter = 'all';
-
-const cards=document.getElementById('cards'),clock=document.getElementById('clock'),addModal=document.getElementById('addModal'),calendarModal=document.getElementById('calendarModal'),notepadModal=document.getElementById('notepadModal'),form=document.getElementById('eventForm'),notepadForm=document.getElementById('notepadForm'),eventName=document.getElementById('eventName'),eventDayMonth=document.getElementById('eventDayMonth'),eventTime=document.getElementById('eventTime'),formMessage=document.getElementById('formMessage'),notepadMessage=document.getElementById('notepadMessage'),calendarList=document.getElementById('calendarList'),calendarDayTitle=document.getElementById('calendarDayTitle');let viewedDate=null;
-
-function getEvents(){ return globalEvents; }
-function sortEvents(v){return[...v].sort((a,b)=>new Date(a.when)-new Date(b.when))}
-
-function chileDateParts(date=new Date()){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);return{year:+p.find(x=>x.type==='year').value,month:+p.find(x=>x.type==='month').value,day:+p.find(x=>x.type==='day').value}}
-function dayKey(d){const p=chileDateParts(d);return`${p.year}-${String(p.month).padStart(2,'0')}-${String(p.day).padStart(2,'0')}`}
-function getTomorrowKey(){
+// Reloj en hora local de Chile
+function updateClock() {
   const now = new Date();
-  now.setDate(now.getDate() + 1);
-  return dayKey(now);
+  const options = { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+  const timeString = new Intl.DateTimeFormat('es-CL', options).format(now);
+  document.getElementById('liveClock').textContent = `${timeString} CLST`;
 }
+setInterval(updateClock, 1000);
+updateClock();
 
-function parseDayMonth(text,time){
-  const raw=text.trim(),digits=raw.replace(/[^0-9]/g,'');let day,month;
-  if(/^\d{4}$/.test(digits)){day=+digits.slice(0,2);month=+digits.slice(2,4)}
-  else{const split=raw.match(/^(\d{1,2})\s*[\/-]\s*(\d{1,2})$/);if(!split)return null;day=+split[1];month=+split[2]}
-  if(month<1||month>12||day<1||day>31)return null;
-  const now=chileDateParts(),selectedDayKey=`${now.year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-  const [hh,mm]=time.split(':').map(Number);if(hh==null||mm==null||hh<0||hh>23||mm<0||mm>59)return null;
-  const candidate=new Date(`${selectedDayKey}T${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:00-03:00`);
-  return Number.isNaN(candidate.getTime())?null:candidate;
-}
-
-function fmt(s){s=Math.max(0,Math.floor(s));return`${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
-function dateText(d){return d.toLocaleString('es-CL',{timeZone:'America/Santiago',weekday:'long',day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit',hour12:false})}
-function timeText(d){return new Intl.DateTimeFormat('es-CL',{timeZone:'America/Santiago',hour:'2-digit',minute:'2-digit',hour12:false}).format(d)}
-function esc(v){const e=document.createElement('div');e.textContent=v;return e.innerHTML}
-
-function getGamerFrameSVG(index) {
-  return `
-  <svg class="card-frame-svg" viewBox="0 0 320 380" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <filter id="glow-${index}" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="5" result="blur" />
-        <feMerge>
-          <feMergeNode in="blur"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
-      </filter>
-    </defs>
-    <rect x="5" y="5" width="310" height="370" rx="16" ry="16" fill="none" stroke="var(--neon-color)" stroke-width="3" filter="url(#glow-${index})" />
-  </svg>
-  `;
-}
-
-function renderCards(){
-  const now = new Date();
-  const todayK = dayKey(now);
-  const tomorrowK = getTomorrowKey();
-
-  let filtered = sortEvents(getEvents()).filter(e => new Date(e.when) > now);
-  if (currentFilter === 'today') {
-    filtered = filtered.filter(e => dayKey(new Date(e.when)) === todayK);
-  } else if (currentFilter === 'tomorrow') {
-    filtered = filtered.filter(e => dayKey(new Date(e.when)) === tomorrowK);
-  }
-
-  const next6 = filtered.slice(0, 6);
-  cards.innerHTML = next6.length ? next6.map((e, i) => {
-    const d = new Date(e.when);
-    const eventK = dayKey(d);
-    const themeIndex = i % 6;
-    let dayTagHtml = '';
-    if (eventK === todayK) {
-      dayTagHtml = `<span class="day-tag tag-today">HOY</span>`;
-    } else if (eventK === tomorrowK) {
-      dayTagHtml = `<span class="day-tag tag-tomorrow">MAÑANA</span>`;
-    } else {
-      dayTagHtml = `<span class="day-tag tag-future">FUTURO</span>`;
-    }
-    return `
-    <article class="card card-theme-${themeIndex}">
-      ${getGamerFrameSVG(i)}
-      <div class="card-header-content">
-        <span class="label">EVENTO #${i + 1}</span>
-        ${dayTagHtml}
-      </div>
-      <div class="card-body-content">
-        <h2 class="name">${esc(e.name)}</h2>
-        <div class="date">${dateText(d)}</div>
-      </div>
-      <div class="card-footer-content">
-        <div class="timer" data-time="${d.toISOString()}">00:00:00</div>
-        <div class="timer-label">TIEMPO RESTANTE</div>
-      </div>
-    </article>`;
-  }).join('') : '<div class="empty">No hay eventos para la opción seleccionada.</div>';
-
-  updateTimers();
-}
-
-function updateTimers(){
-  const now=new Date();
-  document.querySelectorAll('.timer').forEach(e=>e.textContent=fmt((new Date(e.dataset.time)-now)/1000));
-  clock.textContent=new Intl.DateTimeFormat('es-CL',{timeZone:'America/Santiago',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(now);
-}
-
-function renderCalendar(){
-  if(!viewedDate)viewedDate=new Date();
-  const key=dayKey(viewedDate),list=sortEvents(getEvents()).filter(e=>dayKey(new Date(e.when))===key);
-  calendarDayTitle.textContent=new Intl.DateTimeFormat('es-CL',{timeZone:'America/Santiago',weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(viewedDate).toUpperCase();
-  calendarList.innerHTML=list.length?list.map(e=>`<div class="event-row"><div class="event-time">${timeText(new Date(e.when))}</div><strong>${esc(e.name)}</strong><button class="delete" type="button" data-id="${e.id}">🗑 ELIMINAR</button></div>`).join(''):'<div class="empty">No hay eventos para este día.</div>';
-  
-  calendarList.querySelectorAll('.delete').forEach(b=>b.onclick=async()=>{
-    if(confirm('¿Eliminar este evento?')){
-      const eventId = b.dataset.id;
-      await dbClient.from('Eventos').delete().eq('id', eventId);
-      loadEventsData();
-      renderCalendar();
-    }
-  });
-}
-
-function open(m){m.classList.add('open')}
-function close(m){m.classList.remove('open')}
-function message(elem, t){elem.textContent=t;elem.classList.add('show')}
-
-/* GESTIÓN DE VISTAS INTERNAS DESDE EL MENÚ LATERAL */
-document.querySelectorAll('.side-menu-item[data-view]').forEach(item => {
-  item.onclick = () => {
-    document.querySelectorAll('.side-menu-item').forEach(i => i.classList.remove('active'));
-    document.querySelectorAll('.content-view').forEach(v => v.classList.remove('active-view'));
-    
-    item.classList.add('active');
-    const targetView = document.getElementById(item.dataset.view);
-    if(targetView) targetView.classList.add('active-view');
-  };
+// Cerrar sesión
+document.getElementById('logout').addEventListener('click', () => {
+  sessionStorage.removeItem('eventosAccess');
+  window.location.href = 'Index.html';
 });
-
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = btn.dataset.filter;
-    renderCards();
-  };
-});
-
-document.getElementById('addOpen').onclick=()=>{form.reset();formMessage.classList.remove('show');open(addModal)};
-document.getElementById('notepadOpen').onclick=()=>{notepadForm.reset();notepadMessage.classList.remove('show');open(notepadModal)};
-document.getElementById('calendarOpen').onclick=()=>{viewedDate=new Date();renderCalendar();open(calendarModal)};
-document.getElementById('previousDay').onclick=()=>{viewedDate.setDate(viewedDate.getDate()-1);renderCalendar()};
-document.getElementById('nextDay').onclick=()=>{viewedDate.setDate(viewedDate.getDate()+1);renderCalendar()};
-document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>close(document.getElementById(b.dataset.close)));
-[addModal,calendarModal,notepadModal].forEach(m=>m.onclick=e=>{if(e.target===m)close(m)});
-
-form.onsubmit=async e=>{
-  e.preventDefault();
-  const n=eventName.value.trim(),dm=eventDayMonth.value.trim(),t=eventTime.value;
-  if(!n||!dm||!t)return message(formMessage, 'Completa el nombre, día/mes y hora.');
-  const when=parseDayMonth(dm,t);
-  if(!when)return message(formMessage, 'Fecha inválida. Usa 2409 o 24/09.');
-  
-  const { error } = await dbClient.from('Eventos').insert([{ Juego: 'aion_2', Nombre: n.toUpperCase(), fecha_hora: when.toISOString(), notificado: false }]);
-  if(error) return message(formMessage, 'Error al guardar en la base de datos.');
-
-  loadEventsData();
-  close(addModal);
-};
-
-notepadForm.onsubmit=async e=>{
-  e.preventDefault();
-  const dm=document.getElementById('notepadDayMonth').value.trim();
-  const content=document.getElementById('notepadContent').value.trim();
-  if(!dm || !content) return message(notepadMessage, 'Completa la fecha y pega el texto.');
-  
-  const lines = content.split('\n');
-  let newEventsToInsert = [];
-
-  lines.forEach(line => {
-    const trimmed = line.trim();
-    if(!trimmed) return;
-    const match = trimmed.match(/^(\d{1,2}:\d{2})\s+(.+)$/);
-    if(match){
-      const when = parseDayMonth(dm, match[1]);
-      if(when){
-        newEventsToInsert.push({ Juego: 'aion_2', Nombre: match[2].trim().toUpperCase(), fecha_hora: when.toISOString(), notificado: false });
-      }
-    }
-  });
-
-  if(newEventsToInsert.length === 0) return message(notepadMessage, 'Formato inválido. Usa "16:00 Nombre".');
-
-  const { error } = await dbClient.from('Eventos').insert(newEventsToInsert);
-  if(error) return message(notepadMessage, 'Error al importar en la base de datos.');
-
-  loadEventsData();
-  close(notepadModal);
-};
-
-loadEventsData();
-updateTimers();
-setInterval(()=>{updateTimers()},1000);
-
-(function(){
-  const btn=document.getElementById('aiBtn'),panel=document.getElementById('aiPanel'),q=document.getElementById('aiQ'),ask=document.getElementById('aiAsk'),a=document.getElementById('aiA');
-  btn.onclick=()=>{panel.classList.toggle('open');if(panel.classList.contains('open'))q.focus()};
-  ask.onclick=()=>{a.textContent='El asistente no está conectado a una API en esta versión local.';a.classList.add('show')};
-  q.onkeydown=e=>{if(e.key==='Enter')ask.click()};
-})();
 </script>
 
 </body>
