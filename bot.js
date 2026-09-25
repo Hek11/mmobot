@@ -22,13 +22,13 @@ const client = new Client({
 
 // Listas de canales de Discord por cada juego
 const CANALES_AION_2 = [
-    '123456789012345678', // Reemplaza o asegúrate de tener tus IDs reales aquí
-    '876543210987654321'  // Segundo canal de Aion 2
+    '1552858734156587018', // Reemplaza o asegúrate de tener tus IDs reales aquí
+    '1552470452767694908'  // Segundo canal de Aion 2
 ];
 
 const CANALES_THRONE = [
-    '123456789012345678', // Reemplaza o asegúrate de tener tus IDs reales aquí
-    '9876543210987654321'  // Segundo canal de Throne and Liberty
+    '1552858766213513216', // Reemplaza o asegúrate de tener tus IDs reales aquí
+    '1552470452767694908'  // Segundo canal de Throne and Liberty
 ];
 
 // Actualizado a clientReady para evitar advertencias en Discord.js v14/v15
