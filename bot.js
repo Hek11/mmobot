@@ -1,38 +1,36 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const { createClient } = require('@supabase/supabase-js');
-const WebSocket = require('ws');
+require('dotenv').config();
 
-// Configuración de Supabase con soporte para Node 20
-const SUPABASE_URL = 'https://qzmyxhkdljntorpwkrel.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_iymmoU6ygywUbpouzV_OLw_W7EZexGc';
-const dbClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    auth: { persistSession: false },
-    realtime: { transport: WebSocket }
-});
+// Configuración de Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const dbClient = createClient(supabaseUrl, supabaseKey);
 
 // Configuración de Discord
-const TOKEN_DISCORD = process.env.DISCORD_TOKEN;
-
-// 🔹 Canales de Aion 2 (múltiples canales soportados)
-const CANALES_AION_2 = [
-    '1552858734156587018',
-    '1552470452767694908'
-];
-
-// 🔹 Canales de Throne and Liberty (múltiples canales soportados)
-const CANALES_THRONE = [
-    '1552858766213513216',
-    '1552470452767694908'
-];
-
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ]
 });
+
+// Listas de canales de Discord por cada juego
+const CANALES_AION_2 = [
+    '123456789012345678', // Reemplaza o asegúrate de tener tus IDs reales aquí
+    '876543210987654321'  // Segundo canal de Aion 2
+];
+
+const CANALES_THRONE = [
+    '123456789012345678', // Reemplaza o asegúrate de tener tus IDs reales aquí
+    '9876543210987654321'  // Segundo canal de Throne and Liberty
+];
 
 client.once('ready', () => {
     console.log(`🤖 Bot encendido y listo como ${client.user.tag}`);
-    
-    // Revisar eventos cada 60 segundos
+
+    // Intervalo de revisión cada 60 segundos
     setInterval(verificarEventos, 60000);
 });
 
@@ -40,7 +38,6 @@ async function verificarEventos() {
     try {
         const ahora = new Date();
         
-        // Buscamos eventos que aún NO hayan sido notificados
         const { data: eventos, error } = await dbClient
             .from('Eventos')
             .select('*')
@@ -51,15 +48,20 @@ async function verificarEventos() {
             return;
         }
 
-        if (!eventos || eventos.length === 0) return;
+        if (!eventos || eventos.length === 0) {
+            console.log('🔍 No hay eventos pendientes con notificado = false.');
+            return;
+        }
+
+        console.log(`📋 Eventos pendientes encontrados en Supabase: ${eventos.length}`);
 
         for (const evento of eventos) {
             const fechaEvento = new Date(evento.fecha_hora);
             const diferenciaMinutos = (fechaEvento - ahora) / (1000 * 60);
 
-            // Si faltan entre 30 y 0 minutos para el evento
-            if (diferenciaMinutos <= 30 && diferenciaMinutos > 0) {
-                
+            console.log(`⏱️ Evento: "${evento.Nombre}" (${evento.Juego}) | Diferencia: ${diferenciaMinutos.toFixed(2)} mins`);
+
+            if (diferenciaMinutos <= 35 && diferenciaMinutos > 0) {
                 let listaCanales = [];
                 let nombreJuegoTexto = '';
 
@@ -79,23 +81,27 @@ async function verificarEventos() {
                         hour12: false
                     });
 
-                    // Recorremos cada canal de la lista para enviar la alerta a todos
-                    for (const canalId of listaCanales) {
+                    const mensaje = `@everyone ${nombreJuegoTexto} ¡Atención! El evento **${evento.Nombre}** comienza a las **${horaStr} hrs** (En aproximadamente 30 minutos). ¡A alistarse! 🔥`;
+
+                    // Envío en paralelo a todos los canales configurados
+                    const promesasEnvio = listaCanales.map(async (canalId) => {
                         const canal = await client.channels.fetch(canalId).catch(() => null);
                         if (canal) {
-                            await canal.send(
-                                `@everyone ${nombreJuegoTexto} ¡Atención! El evento **${evento.Nombre}** comienza a las **${horaStr} hrs** (En aproximadamente 30 minutos). ¡A alistarse! 🔥`
-                            );
+                            return canal.send(mensaje);
                         }
-                    }
+                    });
 
-                    // Marcamos el evento como notificado en Supabase una sola vez
+                    await Promise.all(promesasEnvio);
+
+                    // Marcamos el evento como notificado en Supabase
                     await dbClient
                         .from('Eventos')
                         .update({ notificado: true })
                         .eq('id', evento.id);
 
-                    console.log(`📢 Alertas enviadas para: ${evento.Nombre} (${evento.Juego})`);
+                    console.log(`📢 Alertas enviadas con éxito para: ${evento.Nombre} (${evento.Juego})`);
+                } else {
+                    console.log(`⚠️ El juego "${evento.Juego}" no tiene canales configurados.`);
                 }
             }
         }
@@ -104,5 +110,4 @@ async function verificarEventos() {
     }
 }
 
-// Conexión del bot a Discord usando la variable de entorno
-client.login(TOKEN_DISCORD);
+client.login(process.env.DISCORD_TOKEN);
