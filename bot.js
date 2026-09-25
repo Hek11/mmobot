@@ -92,4 +92,10 @@ async function verificarEventos() {
     }
 }
 
-console.log("Token largo:", process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.length : "NO EXISTE");
+// Asegúrate de que el evento 'ready' esté presente para que sepas cuándo se conecta
+client.once('ready', () => {
+    console.log(`¡Bot conectado exitosamente como ${client.user.tag}!`);
+});
+
+// Y esta es la línea obligatoria que realiza la conexión usando la variable de entorno
+client.login(process.env.DISCORD_TOKEN);
