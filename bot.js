@@ -12,8 +12,18 @@ const dbClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 
 // Configuración de Discord (Reemplaza con tus datos reales)
 const TOKEN_DISCORD = process.env.DISCORD_TOKEN;
-const CANAL_AION_2 = '1552858734156587018';
-const CANAL_THRONE = '1552858766213513216';
+
+// 🔹 Canales de Aion 2 (puedes agregar más separados por comas entre comillas)
+const CANALES_AION_2 = [
+    '1552858734156587018',
+    '1552470452767694908'
+];
+
+// 🔹 Canales de Throne and Liberty (puedes agregar más aquí también)
+const CANALES_THRONE = [
+    '1552858766213513216',
+    '1552470452767694908'
+];
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
