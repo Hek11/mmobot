@@ -10,16 +10,16 @@ const dbClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     realtime: { transport: WebSocket }
 });
 
-// Configuración de Discord (Reemplaza con tus datos reales)
+// Configuración de Discord
 const TOKEN_DISCORD = process.env.DISCORD_TOKEN;
 
-// 🔹 Canales de Aion 2 (puedes agregar más separados por comas entre comillas)
+// 🔹 Canales de Aion 2 (múltiples canales soportados)
 const CANALES_AION_2 = [
     '1552858734156587018',
     '1552470452767694908'
 ];
 
-// 🔹 Canales de Throne and Liberty (puedes agregar más aquí también)
+// 🔹 Canales de Throne and Liberty (múltiples canales soportados)
 const CANALES_THRONE = [
     '1552858766213513216',
     '1552470452767694908'
@@ -57,43 +57,45 @@ async function verificarEventos() {
             const fechaEvento = new Date(evento.fecha_hora);
             const diferenciaMinutos = (fechaEvento - ahora) / (1000 * 60);
 
-            // Si faltan entre 28 y 30 minutos para el evento...
+            // Si faltan entre 30 y 0 minutos para el evento
             if (diferenciaMinutos <= 30 && diferenciaMinutos > 0) {
                 
-                let canalId = null;
+                let listaCanales = [];
                 let nombreJuegoTexto = '';
 
                 if (evento.Juego === 'aion_2') {
-                    canalId = CANAL_AION_2;
+                    listaCanales = CANALES_AION_2;
                     nombreJuegoTexto = '⚡ **[AION 2]**';
                 } else if (evento.Juego === 'throne_and_liberty') {
-                    canalId = CANAL_THRONE;
+                    listaCanales = CANALES_THRONE;
                     nombreJuegoTexto = '⚔️ **[THRONE AND LIBERTY]**';
                 }
 
-              if (canalId) {
-                    const canal = await client.channels.fetch(canalId).catch(() => null);
-                    if (canal) {
-                        const horaStr = fechaEvento.toLocaleTimeString('es-CL', {
-                            timeZone: 'America/Santiago',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
-                        });
+                if (listaCanales.length > 0) {
+                    const horaStr = fechaEvento.toLocaleTimeString('es-CL', {
+                        timeZone: 'America/Santiago',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
 
-                        // Mensaje fijo indicando que faltan 30 minutos exactos
-                        await canal.send(
-                            `@everyone ${nombreJuegoTexto} ¡Atención! El evento **${evento.Nombre}** comienza a las **${horaStr} hrs** (En aproximadamente 30 minutos). ¡A alistarse! 🔥`
-                        );
-
-                        // Marcamos el evento como notificado en Supabase para que no se repita
-                        await dbClient
-                            .from('Eventos')
-                            .update({ notificado: true })
-                            .eq('id', evento.id);
-
-                        console.log(`📢 Alerta enviada para: ${evento.Nombre} (${evento.Juego})`);
+                    // Recorremos cada canal de la lista para enviar la alerta a todos
+                    for (const canalId of listaCanales) {
+                        const canal = await client.channels.fetch(canalId).catch(() => null);
+                        if (canal) {
+                            await canal.send(
+                                `@everyone ${nombreJuegoTexto} ¡Atención! El evento **${evento.Nombre}** comienza a las **${horaStr} hrs** (En aproximadamente 30 minutos). ¡A alistarse! 🔥`
+                            );
+                        }
                     }
+
+                    // Marcamos el evento como notificado en Supabase una sola vez
+                    await dbClient
+                        .from('Eventos')
+                        .update({ notificado: true })
+                        .eq('id', evento.id);
+
+                    console.log(`📢 Alertas enviadas para: ${evento.Nombre} (${evento.Juego})`);
                 }
             }
         }
@@ -102,10 +104,5 @@ async function verificarEventos() {
     }
 }
 
-// Asegúrate de que el evento 'ready' esté presente para que sepas cuándo se conecta
-client.once('ready', () => {
-    console.log(`¡Bot conectado exitosamente como ${client.user.tag}!`);
-});
-
-// Y esta es la línea obligatoria que realiza la conexión usando la variable de entorno
-client.login(process.env.DISCORD_TOKEN);
+// Conexión del bot a Discord usando la variable de entorno
+client.login(TOKEN_DISCORD);
